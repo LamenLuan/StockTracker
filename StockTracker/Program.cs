@@ -76,6 +76,8 @@ internal class Program
 	{
 		var startTime = new TimeSpan(10, 2, 0);
 		var timeNow = DateTime.Now.TimeOfDay;
+		if (timeNow >= startTime) return;
+
 		var timeToStart = (int)(startTime - timeNow).TotalMilliseconds;
 		Thread.Sleep(timeToStart);
 	}
