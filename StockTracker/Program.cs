@@ -6,18 +6,11 @@ using System.Configuration;
 
 internal class Program
 {
-	private static readonly HttpClient _client = new();
 	private const int COOLDOWN_MINUTES = 30;
 
-	private static bool TimeToEnd
-	{
-		get
-		{
-			var endTime = new TimeSpan(17, 0, 0);
-			var timeNow = DateTime.Now.TimeOfDay;
-			return (timeNow >= endTime);
-		}
-	}
+	private static readonly HttpClient _client = new();
+	private static readonly TimeSpan StartTime = new(10, 2, 0);
+	private static readonly TimeSpan EndTime = new(17, 0, 0);
 
 	private static void Main()
 	{
@@ -39,7 +32,7 @@ internal class Program
 
 		while (true)
 		{
-			if (TimeToEnd) break;
+			if (DateTime.Now.TimeOfDay >= EndTime) break;
 
 			for (int i = 0; i < stocksTracked.Count; i++)
 			{
@@ -74,12 +67,14 @@ internal class Program
 
 	private static void WaitUntilStartTime()
 	{
-		var startTime = new TimeSpan(10, 2, 0);
 		var timeNow = DateTime.Now.TimeOfDay;
-		if (timeNow >= startTime) return;
 
-		var timeToStart = (int)(startTime - timeNow).TotalMilliseconds;
-		Thread.Sleep(timeToStart);
+		if (timeNow >= StartTime)
+		{
+			if (timeNow >= EndTime)
+				Thread.Sleep(TimeSpan.FromDays(1) - timeNow + StartTime);
+		}
+		else Thread.Sleep(StartTime - timeNow);
 	}
 
 	private static void Notify(string message, string? title = null)
