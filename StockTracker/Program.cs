@@ -3,85 +3,149 @@ using Newtonsoft.Json;
 using StockTracker;
 using StockTracker.Types;
 using System.Configuration;
+using System.Net.NetworkInformation;
 
 internal class Program
 {
-	private const int COOLDOWN_MINUTES = 30;
+  private static readonly HttpClient _client = new();
+  private static readonly TimeSpan StartTime = new(10, 2, 0);
+  private static readonly TimeSpan EndTime = TimeSpan.FromHours(17);
+  private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(30);
+  private static readonly List<Tuple<string, float>> StocksTriggered = new();
+  private static readonly List<StockTracking> StocksTracked = FileManager.ReadStockTrackings();
 
-	private static readonly HttpClient _client = new();
-	private static readonly TimeSpan StartTime = new(10, 2, 0);
-	private static readonly TimeSpan EndTime = new(17, 0, 0);
+  private static void Main()
+  {
+    if (!StocksTracked.Any())
+    {
+      Notify("There was nothing to track. Program closed");
+      return;
+    }
 
-	private static void Main()
-	{
-		var stocksTracked = FileManager.ReadStockTrackings();
+    Notify("Program initialized");
+    var apiKey = ConfigurationManager.AppSettings["Brapikey"];
+    WaitUntilStartTime();
+    Notify("Tracker started");
 
-		if (stocksTracked == null || !stocksTracked.Any())
-		{
-			Notify("There was nothing to track. Program closed");
-			return;
-		}
+    while (true)
+    {
+      if (DateTime.Now.TimeOfDay >= EndTime) break;
 
-		Notify("Program started");
+      var connectionTries = 0;
+      var apiCommunicated = true;
 
-		var apiKey = ConfigurationManager.AppSettings["Brapikey"];
-		var stocksTriggered = new List<Tuple<string, float>>();
+      for (int i = 0; i < StocksTracked.Count; i++)
+      {
+        var tracked = StocksTracked[i];
+        var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={apiKey}");
+        string? response;
 
-		WaitUntilStartTime();
-		Notify("Tracker started");
+        try
+        {
+          response = _client.GetStringAsync(uri).Result;
+        }
+        catch (Exception)
+        {
+          if (++connectionTries == 3)
+          {
+            Notify("Failed to communicate with API, program closed");
+            return;
+          }
 
-		while (true)
-		{
-			if (DateTime.Now.TimeOfDay >= EndTime) break;
+          CheckIfApiIsCommunicating(ref apiCommunicated, tracked);
+          i--;
+          continue;
+        }
 
-			for (int i = 0; i < stocksTracked.Count; i++)
-			{
-				var tracked = stocksTracked[i];
-				var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={apiKey}");
-				var response = _client.GetStringAsync(uri).Result;
-				if (response == null) continue;
+        connectionTries = 0;
+        apiCommunicated = true;
+        if (string.IsNullOrEmpty(response)) continue;
 
-				var stock = JsonConvert.DeserializeObject<StocksResults>(response);
-				if (stock == null) continue;
+        var stockResults = JsonConvert.DeserializeObject<StocksResults>(response);
+        if (stockResults == null) continue;
 
-				var priceNow = stock.Results.First().RegularMarketPrice;
-				var incomePercentage = ((priceNow / tracked.RegularMarketPrice) - 1) * 100;
-				if (incomePercentage >= tracked.TriggerPercentage)
-				{
-					stocksTriggered.Add(new Tuple<string, float>(tracked.Symbol, incomePercentage));
-					stocksTracked.Remove(tracked);
-					i--;
-				}
-			}
+        if (StockTriggered(stockResults, tracked)) i--;
+      }
 
-			if (stocksTriggered.Any())
-			{
-				var triggersMessages = stocksTriggered.Select(s => $"{s.Item1}: {s.Item2:#.##}%");
-				var finalMessage = string.Join("\n", triggersMessages);
-				Notify(finalMessage, "Tracker Triggered!");
-			}
+      NotifyTriggers(StocksTriggered);
+      Thread.Sleep(Cooldown);
+    }
+  }
 
-			Thread.Sleep(COOLDOWN_MINUTES * 60_000);
-		}
-	}
+  private static bool StockTriggered(
+      StocksResults stocksResults,
+      StockTracking tracked
+    )
+  {
+    var priceNow = stocksResults.Results.First().RegularMarketPrice;
+    var incomePercentage = ((priceNow / tracked.RegularMarketPrice) - 1) * 100;
 
-	private static void WaitUntilStartTime()
-	{
-		var timeNow = DateTime.Now.TimeOfDay;
+    if (incomePercentage >= tracked.TriggerPercentage)
+    {
+      StocksTriggered.Add(new Tuple<string, float>(tracked.Symbol, incomePercentage));
+      StocksTracked.Remove(tracked);
+      return true;
+    }
 
-		if (timeNow >= StartTime)
-		{
-			if (timeNow >= EndTime)
-				Thread.Sleep(TimeSpan.FromDays(1) - timeNow + StartTime);
-		}
-		else Thread.Sleep(StartTime - timeNow);
-	}
+    return false;
+  }
 
-	private static void Notify(string message, string? title = null)
-	{
-		var toast = new ToastContentBuilder();
-		if (title != null) toast.AddText(title);
-		toast.AddText(message);
-		toast.Show();
-	}
+  private static void CheckIfApiIsCommunicating(
+      ref bool apiCommunicated, StockTracking tracked
+    )
+  {
+    if (ApiIsCommunicating())
+    {
+      if (apiCommunicated) StocksTracked.Remove(tracked);
+      apiCommunicated = true;
+    }
+    else
+    {
+      Thread.Sleep(TimeSpan.FromSeconds(2));
+      apiCommunicated = false;
+    }
+  }
+
+  private static bool ApiIsCommunicating()
+  {
+    try
+    {
+      Ping myPing = new();
+      return myPing.Send("brapi.dev").Status == IPStatus.Success;
+    }
+    catch (Exception)
+    {
+      return false;
+    }
+  }
+
+  private static void WaitUntilStartTime()
+  {
+    var timeNow = DateTime.Now.TimeOfDay;
+
+    if (timeNow >= StartTime)
+    {
+      if (timeNow >= EndTime)
+        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + StartTime);
+    }
+    else Thread.Sleep(StartTime - timeNow);
+  }
+
+  private static void NotifyTriggers(List<Tuple<string, float>> stocksTriggered)
+  {
+    if (stocksTriggered.Any())
+    {
+      var triggersMessages = stocksTriggered.Select(s => $"{s.Item1}: {s.Item2:#.##}%");
+      var finalMessage = string.Join("\n", triggersMessages);
+      Notify(finalMessage, "Tracker Triggered!");
+    }
+  }
+
+  private static void Notify(string message, string? title = null)
+  {
+    var toast = new ToastContentBuilder();
+    if (title != null) toast.AddText(title);
+    toast.AddText(message);
+    toast.Show();
+  }
 }

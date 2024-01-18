@@ -13,14 +13,12 @@ namespace StockTracker
     private static string Path
       => $"{DirectoryPath}/{FILE_NAME}";
 
-    public static List<StockTracking>? ReadStockTrackings()
+    public static List<StockTracking> ReadStockTrackings()
     {
-      if (!File.Exists(Path))
-        return null;
-
+      if (!File.Exists(Path)) return new();
       var fileText = File.ReadAllText(Path);
 
-      return JsonConvert.DeserializeObject<List<StockTracking>>(fileText);
+      return JsonConvert.DeserializeObject<List<StockTracking>>(fileText) ?? new();
     }
   }
 }
