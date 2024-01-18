@@ -13,6 +13,7 @@ internal class Program
   private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(30);
   private static readonly List<Tuple<string, float>> StocksTriggered = new();
   private static readonly List<StockTracking> StocksTracked = FileManager.ReadStockTrackings();
+  private static readonly string? ApiKey = ConfigurationManager.AppSettings["Brapikey"];
 
   private static void Main()
   {
@@ -22,10 +23,7 @@ internal class Program
       return;
     }
 
-    Notify("Program initialized");
-    var apiKey = ConfigurationManager.AppSettings["Brapikey"];
-    WaitUntilStartTime();
-    Notify("Tracker started");
+    InitializeProgram();
 
     while (true)
     {
@@ -37,7 +35,7 @@ internal class Program
       for (int i = 0; i < StocksTracked.Count; i++)
       {
         var tracked = StocksTracked[i];
-        var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={apiKey}");
+        var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={ApiKey}");
         string? response;
 
         try
@@ -63,13 +61,19 @@ internal class Program
 
         var stockResults = JsonConvert.DeserializeObject<StocksResults>(response);
         if (stockResults == null) continue;
-
         if (StockTriggered(stockResults, tracked)) i--;
       }
 
       NotifyTriggers(StocksTriggered);
       Thread.Sleep(Cooldown);
     }
+  }
+
+  private static void InitializeProgram()
+  {
+    Notify("Program initialized");
+    WaitUntilStartTime();
+    Notify("Tracker started");
   }
 
   private static bool StockTriggered(
