@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using StockTracker.Types;
+﻿using StockTracker.Types;
+using StockTracker.Utils.Extensions;
+using System.Text.Json;
 
 namespace StockTracker
 {
@@ -17,8 +18,7 @@ namespace StockTracker
     {
       if (!File.Exists(Path)) return new();
       var fileText = File.ReadAllText(Path);
-
-      return JsonConvert.DeserializeObject<List<StockTracking>>(fileText) ?? new();
+      return fileText.Deserialize<List<StockTracking>>() ?? new();
     }
   }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
-using Newtonsoft.Json;
 using StockTracker;
 using StockTracker.Types;
+using StockTracker.Utils.Extensions;
 using System.Configuration;
 using System.Net.NetworkInformation;
 
@@ -23,7 +23,7 @@ internal class Program
       return;
     }
 
-    InitializeProgram();
+    WaitUntilStartTime();
 
     while (true)
     {
@@ -59,7 +59,7 @@ internal class Program
         apiCommunicated = true;
         if (string.IsNullOrEmpty(response)) continue;
 
-        var stockResults = JsonConvert.DeserializeObject<StocksResults>(response);
+        var stockResults = response.Deserialize<StocksResults>();
         if (stockResults == null) continue;
         if (StockTriggered(stockResults, tracked)) i--;
       }
@@ -67,13 +67,6 @@ internal class Program
       NotifyTriggers(StocksTriggered);
       Thread.Sleep(Cooldown);
     }
-  }
-
-  private static void InitializeProgram()
-  {
-    Notify("Program initialized");
-    WaitUntilStartTime();
-    Notify("Tracker started");
   }
 
   private static bool StockTriggered(
@@ -125,6 +118,7 @@ internal class Program
 
   private static void WaitUntilStartTime()
   {
+    Notify("Program initialized");
     var timeNow = DateTime.Now.TimeOfDay;
 
     if (timeNow >= StartTime)
@@ -133,6 +127,8 @@ internal class Program
         Thread.Sleep(TimeSpan.FromDays(1) - timeNow + StartTime);
     }
     else Thread.Sleep(StartTime - timeNow);
+
+    Notify("Tracker started");
   }
 
   private static void NotifyTriggers(List<Tuple<string, float>> stocksTriggered)
