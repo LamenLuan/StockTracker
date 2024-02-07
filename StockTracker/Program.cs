@@ -23,7 +23,7 @@ internal class Program
       return;
     }
 
-    WaitUntilStartTime();
+    //WaitUntilStartTime();
 
     while (true)
     {
@@ -40,6 +40,8 @@ internal class Program
 
         try
         {
+          var stock = IbovScrapper.FindStockInfos(tracked.Symbol);
+          var a = stock.RegularMarketPrice;
           response = _client.GetStringAsync(uri).Result;
         }
         catch (Exception)
