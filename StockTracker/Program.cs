@@ -1,19 +1,15 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
 using StockTracker;
 using StockTracker.Types;
-using StockTracker.Utils.Extensions;
-using System.Configuration;
 using System.Net.NetworkInformation;
 
 internal class Program
 {
-  private static readonly HttpClient _client = new();
   private static readonly TimeSpan StartTime = new(10, 2, 0);
   private static readonly TimeSpan EndTime = TimeSpan.FromHours(17);
   private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(30);
   private static readonly List<Tuple<string, float>> StocksTriggered = new();
   private static readonly List<StockTracking> StocksTracked = FileManager.ReadStockTrackings();
-  private static readonly string? ApiKey = ConfigurationManager.AppSettings["Brapikey"];
 
   private static void Main()
   {
@@ -23,7 +19,7 @@ internal class Program
       return;
     }
 
-    //WaitUntilStartTime();
+    WaitUntilStartTime();
 
     while (true)
     {
@@ -35,14 +31,11 @@ internal class Program
       for (int i = 0; i < StocksTracked.Count; i++)
       {
         var tracked = StocksTracked[i];
-        var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={ApiKey}");
-        string? response;
+        Stock? stock;
 
         try
         {
-          var stock = IbovScrapper.FindStockInfos(tracked.Symbol);
-          var a = stock.RegularMarketPrice;
-          response = _client.GetStringAsync(uri).Result;
+          stock = IbovScrapper.FindStockInfos(tracked.Symbol);
         }
         catch (Exception)
         {
@@ -59,11 +52,8 @@ internal class Program
 
         connectionTries = 0;
         apiCommunicated = true;
-        if (string.IsNullOrEmpty(response)) continue;
 
-        var stockResults = response.Deserialize<StocksResults>();
-        if (stockResults == null) continue;
-        if (StockTriggered(stockResults, tracked)) i--;
+        if (StockTriggered(stock, tracked)) i--;
       }
 
       NotifyTriggers(StocksTriggered);
@@ -71,13 +61,11 @@ internal class Program
     }
   }
 
-  private static bool StockTriggered(
-      StocksResults stocksResults,
-      StockTracking tracked
-    )
+  private static bool StockTriggered(Stock? stock, StockTracking tracked)
   {
-    var priceNow = stocksResults.Results.First().RegularMarketPrice;
-    var incomePercentage = ((priceNow / tracked.RegularMarketPrice) - 1) * 100;
+    if (stock == null) return false;
+
+    var incomePercentage = ((stock.Price / tracked.Price) - 1) * 100;
 
     if (incomePercentage >= tracked.TriggerPercentage)
     {
@@ -110,7 +98,7 @@ internal class Program
     try
     {
       Ping myPing = new();
-      return myPing.Send("brapi.dev").Status == IPStatus.Success;
+      return myPing.Send("google.com/finance").Status == IPStatus.Success;
     }
     catch (Exception)
     {

@@ -8,8 +8,8 @@ namespace StockTracker
   public class IbovScrapper
   {
     private const string BASE_URL = "https://www.google.com/finance/quote/";
-    private const string REGEX_PRICE_PATTERN = @"\d+(\.\d{1,2})?";
-    private const string REGEX_CURRENCY_PATTERN = @"R\$" + REGEX_PRICE_PATTERN;
+    private const string REGEX_PRICE_PATTERN = @"\d+\.\d{2}";
+    private const string X_PATH = "//div[contains(@class, 'fxKbKc')]";
 
     private static readonly HttpClient HttpClient = new();
 
@@ -17,21 +17,21 @@ namespace StockTracker
     {
       var uri = new Uri($"{BASE_URL}{stockCode}:BVMF");
       var html = HttpClient.GetStringAsync(uri).Result;
-      var htmlDocument = new HtmlDocument();
+      HtmlDocument htmlDocument = new();
       htmlDocument.LoadHtml(html);
 
-      var div = htmlDocument.DocumentNode.SelectSingleNode("//div[contains(@class, 'fxKbKc')]");
+      var div = htmlDocument.DocumentNode.SelectSingleNode(X_PATH);
       var value = div.InnerText;
 
-      if (!Regex.IsMatch(value, REGEX_CURRENCY_PATTERN)) return null;
+      var match = Regex.Match(value, REGEX_PRICE_PATTERN);
+      if (!match.Success) return null;
 
-      var priceStr = Regex.Match(value, REGEX_PRICE_PATTERN).Value;
-      var price = float.Parse(priceStr, CultureInfo.InvariantCulture);
+      var price = float.Parse(match.Value, CultureInfo.InvariantCulture);
 
       return new Stock
       {
         Symbol = stockCode,
-        RegularMarketPrice = price
+        Price = price
       };
     }
   }
