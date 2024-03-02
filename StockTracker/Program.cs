@@ -11,9 +11,13 @@ internal class Program
   private static readonly TimeSpan StartTime = new(10, 2, 0);
   private static readonly TimeSpan EndTime = TimeSpan.FromHours(17);
   private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(30);
-  private static readonly List<Tuple<string, float>> StocksTriggered = new();
-  private static readonly List<StockTracking> StocksTracked = FileManager.ReadStockTrackings();
-  private static readonly string? ApiKey = ConfigurationManager.AppSettings["Brapikey"];
+  private static readonly List<StockTriggered> StocksTriggered = new();
+
+  private static readonly List<StockTracking> StocksTracked =
+    FileManager.ReadStockTrackings();
+
+  private static readonly string? ApiKey =
+    ConfigurationManager.AppSettings["Brapikey"];
 
   private static void Main()
   {
@@ -35,12 +39,12 @@ internal class Program
       for (int i = 0; i < StocksTracked.Count; i++)
       {
         var tracked = StocksTracked[i];
-        var uri = new Uri($"https://brapi.dev/api/quote/{tracked.Symbol}?token={ApiKey}");
+        var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={ApiKey}";
         string? response;
 
         try
         {
-          response = _client.GetStringAsync(uri).Result;
+          response = _client.GetStringAsync(url).Result;
         }
         catch (Exception)
         {
@@ -77,15 +81,28 @@ internal class Program
     var priceNow = stocksResults.Results.First().RegularMarketPrice;
     var incomePercentage = ((priceNow / tracked.RegularMarketPrice) - 1) * 100;
 
-    if (incomePercentage >= tracked.TriggerPercentage)
+    if (PriceTriggered(tracked, incomePercentage))
     {
-      StocksTriggered.Add(new Tuple<string, float>(tracked.Symbol, incomePercentage));
+      var stockTriggered = new StockTriggered(tracked, incomePercentage);
+      StocksTriggered.Add(stockTriggered);
       StocksTracked.Remove(tracked);
       return true;
     }
 
     return false;
   }
+
+  private static bool PriceTriggered(StockTracking tracked, float percentage)
+  {
+    return TriggeredToBuy(tracked, percentage)
+      || TriggeredToSell(tracked, -percentage);
+  }
+
+  private static bool TriggeredToBuy(StockTracking tracked, float percentage)
+    => tracked.TrackingToBuy && percentage <= tracked.TriggerPercentage;
+
+  private static bool TriggeredToSell(StockTracking tracked, float percentage)
+  => !tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
 
   private static void CheckIfApiIsCommunicating(
       ref bool apiCommunicated, StockTracking tracked
@@ -131,11 +148,11 @@ internal class Program
     Notify("Tracker started");
   }
 
-  private static void NotifyTriggers(List<Tuple<string, float>> stocksTriggered)
+  private static void NotifyTriggers(List<StockTriggered> stocksTriggered)
   {
     if (stocksTriggered.Any())
     {
-      var triggersMessages = stocksTriggered.Select(s => $"{s.Item1}: {s.Item2:#.##}%");
+      var triggersMessages = stocksTriggered.Select(s => s.ToString());
       var finalMessage = string.Join("\n", triggersMessages);
       Notify(finalMessage, "Tracker Triggered!");
     }
