@@ -94,12 +94,12 @@ internal class Program
 
   private static bool PriceTriggered(StockTracking tracked, float percentage)
   {
-    return TriggeredToBuy(tracked, percentage)
-      || TriggeredToSell(tracked, -percentage);
+    return TriggeredToBuy(tracked, -percentage)
+      || TriggeredToSell(tracked, percentage);
   }
 
   private static bool TriggeredToBuy(StockTracking tracked, float percentage)
-    => tracked.TrackingToBuy && percentage <= tracked.TriggerPercentage;
+    => tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
 
   private static bool TriggeredToSell(StockTracking tracked, float percentage)
   => !tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
