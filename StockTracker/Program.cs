@@ -8,7 +8,7 @@ using System.Net.NetworkInformation;
 internal class Program
 {
 	private static readonly HttpClient _client = new();
-	private static readonly TimeSpan StartTime = new(10, 2, 0);
+	private static readonly TimeSpan StartTime = new(9, 30, 0);
 	private static readonly TimeSpan EndTime = TimeSpan.FromHours(17);
 	private static readonly TimeSpan Cooldown = TimeSpan.FromMinutes(15);
 	private static readonly List<StockTriggered> StocksTriggered = new();
