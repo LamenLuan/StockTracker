@@ -15,7 +15,7 @@ namespace StockTracker
     public static TimeSpan GetTimeParam(this string key)
     {
       if (!TimeSpan.TryParse(key.AppConfigValue(), out var setting))
-        throw new ArgumentOutOfRangeException(nameof(key));
+        throw new ArgumentOutOfRangeException(key);
 
       return setting;
     }

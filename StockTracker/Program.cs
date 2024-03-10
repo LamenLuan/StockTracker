@@ -77,7 +77,7 @@ internal class Program
     }
     catch (ArgumentOutOfRangeException ex)
     {
-      Notify($"Program failed to load the setting [{ex.ParamName}]");
+      Notify($"Program failed to load the setting [{ex.ParamName}]. Program closed");
       throw;
     }
   }
