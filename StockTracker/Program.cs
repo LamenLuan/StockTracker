@@ -1,19 +1,20 @@
-﻿using Microsoft.Toolkit.Uwp.Notifications;
-using StockTracker;
+﻿using StockTracker;
 using StockTracker.Types;
 using StockTracker.Utils.Extensions;
 using System.Net.NetworkInformation;
 
 internal class Program
 {
-  private static TimeSpan Cooldown;
-  private static TimeSpan StartTime;
   private static TimeSpan EndTime;
+  public static TimeSpan Cooldown;
+  public static float PriceRange;
+
   private static List<StockTracking> StocksTracked = new();
 
   private static readonly HttpClient _client = new();
   private static readonly List<StockTriggered> StocksTriggered = new();
-  private static readonly string? ApiKey = AppKeys.BRAPI_KEY.AppConfigValue();
+  private static readonly List<StockTriggered> StocksNearTrigger = new();
+  private static readonly string? ApiKey = AppConfigKeys.BRAPI_KEY.GetValue();
 
   private static void Main()
   {
@@ -41,7 +42,7 @@ internal class Program
         {
           if (++connectionTries == 3)
           {
-            Notify("Failed to communicate with API, program closed");
+            Notifier.Notify("Failed to communicate with API, program closed");
             return;
           }
 
@@ -55,11 +56,12 @@ internal class Program
         if (string.IsNullOrEmpty(response)) continue;
 
         var stockResults = response.Deserialize<StocksResults>();
+
         if (stockResults == null) continue;
         if (StockTriggered(stockResults, tracked)) i--;
       }
 
-      NotifyTriggers(StocksTriggered);
+      NotifyTriggers();
       Thread.Sleep(Cooldown);
       ReadStockTrackings();
     }
@@ -68,18 +70,9 @@ internal class Program
   private static void ReadSettings()
   {
     ReadStockTrackings();
-
-    try
-    {
-      Cooldown = AppKeys.COOLDOWN.GetTimeParam();
-      StartTime = AppKeys.START_TIME.GetTimeParam();
-      EndTime = AppKeys.END_TIME.GetTimeParam();
-    }
-    catch (ArgumentOutOfRangeException ex)
-    {
-      Notify($"Program failed to load the setting [{ex.ParamName}]. Program closed");
-      throw;
-    }
+    EndTime = AppConfigKeys.END_TIME.GetAsTimeSpan();
+    PriceRange = AppConfigKeys.NEAR_PRICE_RANGE.GetAsFloat();
+    Cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan();
   }
 
   private static void ReadStockTrackings()
@@ -88,7 +81,7 @@ internal class Program
 
     if (!StocksTracked.Any())
     {
-      Notify("No tracker found in data file. Program closed");
+      Notifier.Notify("No tracker found in data file. Program closed");
       throw new ArgumentOutOfRangeException(nameof(StocksTracked));
     }
   }
@@ -109,7 +102,22 @@ internal class Program
       return true;
     }
 
+    if (PriceNearTrigger(tracked, priceNow))
+    {
+      var stockTriggered = new StockTriggered(tracked, incomePercentage);
+      StocksNearTrigger.Add(stockTriggered);
+    }
+
     return false;
+  }
+
+  private static bool PriceNearTrigger(StockTracking tracked, float priceNow)
+  {
+    var triggerPctg = tracked.TriggerPercentage / 100;
+    var priceDesired = tracked.RegularMarketPrice * (1 + (tracked.TrackingToBuy ? -triggerPctg : triggerPctg));
+    var rangeValue = priceDesired * PriceRange / 100;
+
+    return priceNow >= priceDesired - rangeValue && priceNow <= priceDesired + rangeValue;
   }
 
   private static bool PriceTriggered(StockTracking tracked, float percentage)
@@ -155,34 +163,25 @@ internal class Program
 
   private static void WaitUntilStartTime()
   {
-    Notify("Program initialized");
+    var startTime = AppConfigKeys.START_TIME.GetAsTimeSpan();
     var timeNow = DateTime.Now.TimeOfDay;
 
-    if (timeNow >= StartTime)
+    if (timeNow >= startTime)
     {
       if (timeNow >= EndTime)
-        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + StartTime);
+        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + startTime);
     }
-    else Thread.Sleep(StartTime - timeNow);
+    else Thread.Sleep(startTime - timeNow);
 
-    Notify("Tracker started");
+    Notifier.Notify("Tracker started");
   }
 
-  private static void NotifyTriggers(List<StockTriggered> stocksTriggered)
+  private static void NotifyTriggers()
   {
-    if (stocksTriggered.Any())
-    {
-      var triggersMessages = stocksTriggered.Select(s => s.ToString());
-      var finalMessage = string.Join("\n", triggersMessages);
-      Notify(finalMessage, "Tracker Triggered!");
-    }
-  }
+    if (StocksTriggered.Any())
+      Notifier.NotifyStocks(StocksTriggered, "Tracker Triggered!");
 
-  private static void Notify(string message, string? title = null)
-  {
-    var toast = new ToastContentBuilder();
-    if (title != null) toast.AddText(title);
-    toast.AddText(message);
-    toast.Show();
+    if (StocksNearTrigger.Any())
+      Notifier.NotifyStocks(StocksNearTrigger, "Stocks near triggering!");
   }
 }
