@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\js\home.js" />
+  </ItemGroup>
+
 </Project>

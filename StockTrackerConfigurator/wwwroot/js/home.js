@@ -1,6 +1,3 @@
-const API_KEY_FORM_ID = 'brapiKeyForm'
-const API_KEY_INPUT_ID = 'brapiKeyInput'
-
 function showValidationMessages(form) {
 	const inputs = $(form).find("input,select,textarea")
 	inputs.each(function () {

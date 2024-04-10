@@ -1,7 +1,6 @@
 ﻿using Common;
 using Microsoft.AspNetCore.Mvc;
 using StockTrackerConfigurator.Models;
-using System.Diagnostics;
 
 namespace StockTrackerConfigurator.Controllers
 {
@@ -16,11 +15,6 @@ namespace StockTrackerConfigurator.Controllers
 			return View(model: model);
 		}
 
-		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-		public IActionResult Error()
-		{
-			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-		}
 		private bool BrapiKeyValid(string brapiKey)
 		{
 			var url = $"https://brapi.dev/api/quote/PETR4?token={brapiKey}";
