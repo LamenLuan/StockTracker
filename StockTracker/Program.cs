@@ -1,6 +1,9 @@
-﻿using StockTracker;
+﻿using Common;
+using Common.Extensions;
+using Common.Types;
+using StockTracker;
+using StockTracker.Extensions;
 using StockTracker.Types;
-using StockTracker.Utils.Extensions;
 using System.Net.NetworkInformation;
 
 internal class Program

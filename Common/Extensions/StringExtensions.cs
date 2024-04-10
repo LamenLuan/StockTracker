@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace StockTracker.Utils.Extensions
+namespace Common.Extensions
 {
   public static class StringExtensions
   {

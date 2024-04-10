@@ -1,4 +1,6 @@
-﻿namespace StockTracker.Types
+﻿using Common.Types;
+
+namespace StockTracker.Types
 {
   public class StockTriggered
   {
