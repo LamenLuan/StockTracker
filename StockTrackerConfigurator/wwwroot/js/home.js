@@ -1,5 +1,28 @@
+$(document).ready(function () {
+	const form = $(`#${API_KEY_FORM_ID}`)
+	const input = form.find(`#${API_KEY_INPUT_ID}`)
+
+	input.prop('disabled', true)
+	$.get({
+		url: `Home/${GET_BRAPI_KEY_URL}`,
+		success: function (response) {
+			if (response) {
+				form.data('validKeyInserted', true)
+				input.val(response)
+				unlockCards()
+			}
+		},
+		complete: () => input.removeAttr('disabled')
+	})
+})
+
+function unlockCards() {
+
+}
+
 function showValidationMessages(form) {
 	const inputs = $(form).find("input,select,textarea")
+
 	inputs.each(function () {
 		const feedback = $(this).parent().find(".invalid-feedback:first")
 		if (this.validity.valueMissing)
@@ -25,12 +48,11 @@ function showValidationMessages(form) {
 
 function validateKey(form) {
 	const input = $(form).find(`#${API_KEY_INPUT_ID}`)
-	const key = input.val()
-
 	input.prop('disabled', true)
 
-	$.get({
-		url: `https://brapi.dev/api/quote/PETR4?token=${key}`,
+	$.post({
+		url: `Home/${CHECK_BRAPI_KEY_VALID}`,
+		data: getDataToCheckBrapiKeyValid(input),
 		success: function (response) {
 			$(form).data('validKeyInserted', true)
 		},
@@ -43,6 +65,12 @@ function validateKey(form) {
 		},
 		complete: () => input.removeAttr('disabled')
 	})
+}
+
+function getDataToCheckBrapiKeyValid(input) {
+	const data = {}
+	data[`${BRAPI_KEY_PROP}`] = input.val()
+	return data
 }
 
 $(`#${API_KEY_FORM_ID}`).on('submit', function (e) {

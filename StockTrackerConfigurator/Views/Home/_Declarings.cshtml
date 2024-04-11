@@ -1,4 +1,10 @@
-﻿<script>
+﻿@using StockTrackerConfigurator.Controllers;
+@using StockTrackerConfigurator.DTOs;
+
+<script>
 	const API_KEY_FORM_ID = '@HomeModel.API_KEY_FORM_ID'
 	const API_KEY_INPUT_ID = '@HomeModel.API_KEY_INPUT_ID'
+	const GET_BRAPI_KEY_URL = '@nameof(HomeController.GetBrapiKey)'
+	const CHECK_BRAPI_KEY_VALID = '@nameof(HomeController.CheckIfBrapiKeyValid)'
+	const BRAPI_KEY_PROP = '@nameof(BrapiKeyDTO.Key)'
 </script>

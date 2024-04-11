@@ -14,5 +14,8 @@ namespace Common.Extensions
       if (value == null) return default;
       return JsonSerializer.Deserialize<T>(value, JsonOptions);
     }
+
+    public static bool HasContent(this string value)
+      => !string.IsNullOrEmpty(value);
   }
 }
