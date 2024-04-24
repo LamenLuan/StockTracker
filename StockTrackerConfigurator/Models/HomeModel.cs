@@ -2,8 +2,8 @@
 {
   public class HomeModel
   {
-    public const string API_KEY_FORM_ID = "brapiKeyForm";
-    public const string API_KEY_INPUT_ID = "brapiKeyInput";
+    public const string API_KEY_FORM_ID = "brapi-key-form";
+    public const string API_KEY_INPUT_ID = "brapi-key-input";
 
     public string BrapiKey { get; set; }
 

@@ -54,6 +54,10 @@ function validateKey(form) {
 		url: `Home/${CHECK_BRAPI_KEY_VALID}`,
 		data: getDataToCheckBrapiKeyValid(input),
 		success: function (response) {
+			if (!response.result) {
+				showErrorAlert(response)
+				return
+			}
 			$(form).data('validKeyInserted', true)
 		},
 		error: function (response) {

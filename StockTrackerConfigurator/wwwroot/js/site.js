@@ -1,4 +1,9 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+﻿function showErrorAlert(response) {
+	const modal = $('#modal-alert')
+	const modalTitle = modal.find('.modal-title:first')
+	const modalBody = modal.find('.modal-body:first')
+	modalTitle.text('Error')
+	const errorMsg = `An error ocurred. ${response.content ? response.content : 'Please try again later'}`
+	modalBody.text(errorMsg)
+	new bootstrap.Modal('#modal-alert').show()
+}

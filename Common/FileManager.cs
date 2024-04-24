@@ -29,5 +29,10 @@ namespace Common
 			var fileText = File.ReadAllText(StocksPath);
 			return fileText.Deserialize<List<StockTracking>>() ?? new();
 		}
+
+		public static void WriteBrapiKey(string key)
+		{
+			File.WriteAllText(ApiKeyPath, key);
+		}
 	}
 }

@@ -1,16 +1,63 @@
 ﻿@model HomeModel
 
 @{
-    ViewData["Title"] = "Home Page";
+  ViewData["Title"] = "Home Page";
+  var addCardButton = new CreationCardViewModel { AddCardButtonMode = true };
 }
 
-<form id="brapiKeyForm" class="needs-validation" novalidate>
-	<div>
-		<label for="brapiKeyInput" class="form-label">Brapi Key</label>
-		<input name="brapiKey" type="password" class="form-control" id="brapiKeyInput" required />
-		<div class="invalid-feedback"></div>
-	</div>
-</form>
+<div class="col-12 mb-5">
+  <form id="@HomeModel.API_KEY_FORM_ID" class="needs-validation" novalidate>
+    <div>
+      <label for="@HomeModel.API_KEY_INPUT_ID" class="form-label">Brapi Key</label>
+      <input name="brapiKey"
+             type="password"
+             class="form-control"
+             id="@HomeModel.API_KEY_INPUT_ID"
+             required />
+      <div class="invalid-feedback"></div>
+    </div>
+  </form>
+</div>
+
+<div class="row m-0">
+
+  <div class="col-2 border rounded p-3">
+    <form class="needs-validation" novalidate>
+
+      <div class="form-group">
+        <select class="form-control" id="stock">
+        </select>
+      </div>
+
+      <hr />
+
+      <div class="form-group mb-3">
+        <label for="price">Price</label>
+        <input type="number" class="form-control" id="price">
+      </div>
+
+      <div class="input-group mb-3">
+
+        <label class="col-12" for="percentage">Triggers in (%)</label>
+
+        <div class="input-group-prepend w-50">
+          <input type="number" class="form-control" id="percentage">
+        </div>
+
+        <input type="text" class="form-control" disabled>
+      </div>
+
+      <div class="input-group">
+        <button type="button" class="btn btn-danger w-50">Buying</button>
+        <button type="button" class="btn btn-success w-50">Selling</button>
+      </div>
+
+    </form>
+  </div>
+
+  <partial name="_CreationCard" model="addCardButton" />
+
+</div>
 
 @section Scripts{
 	<partial name="_Declarings" />
