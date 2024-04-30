@@ -18,14 +18,36 @@ body {
 }
 
 .stock-card {
-
+  padding: 0;
+  margin-right: 1rem;
 }
 
-.card-plus-sign {
-  height: 100%;
+.stock-card-border {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: sticky;
-  bottom: 100%;
+}
+
+.add-card {
+  cursor: pointer;
+  
+}
+
+.add-card:hover {
+  background-color: darkgray;
+  transition: 0.6s;
+}
+
+.add-card:hover .card-plus-sign {
+  font-size: 64px;
+  transition: 0.6s;
+}
+
+.add-card form {
+  visibility: hidden;
+}
+
+.card-plus-sign {
+  position: absolute;
+  font-size: 48px;
 }
