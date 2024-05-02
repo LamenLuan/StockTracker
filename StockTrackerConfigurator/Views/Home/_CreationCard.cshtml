@@ -8,7 +8,9 @@
           novalidate>
 
       <div class="form-group">
-        <select class="form-control" id="stock">
+        <select @(Model.AddCardButtonMode ? string.Empty : "id=stock")
+                class="form-control" 
+          required>
         </select>
       </div>
 
@@ -16,7 +18,10 @@
 
       <div class="form-group mb-3">
         <label for="price">Price</label>
-        <input type="number" class="form-control" id="price">
+        <input @(Model.AddCardButtonMode ? string.Empty : "id=price")
+          type="number" 
+          class="form-control" 
+          required>
       </div>
 
       <div class="input-group mb-3">
@@ -24,10 +29,17 @@
         <label class="col-12" for="percentage">Triggers in (%)</label>
 
         <div class="input-group-prepend w-50">
-          <input type="number" class="form-control" id="percentage">
+          <input @(Model.AddCardButtonMode ? string.Empty : "id=percentage")
+                 type="number" 
+            class="form-control" 
+            required>
         </div>
 
-        <input type="text" class="form-control" disabled>
+        <input @(Model.AddCardButtonMode ? string.Empty : "id=percentage-result")
+               type="text" 
+          class="form-control" 
+          disabled>
+
       </div>
 
       <div class="input-group">

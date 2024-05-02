@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(() => {
 	const form = $(`#${API_KEY_FORM_ID}`)
 	const input = form.find(`#${API_KEY_INPUT_ID}`)
 
@@ -14,6 +14,8 @@ $(document).ready(function () {
 		},
 		complete: () => input.removeAttr('disabled')
 	})
+
+	$('select').select2()
 })
 
 function unlockCards() {
