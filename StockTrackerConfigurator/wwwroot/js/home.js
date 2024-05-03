@@ -15,7 +15,24 @@ $(() => {
 		complete: () => input.removeAttr('disabled')
 	})
 
-	$('select').select2()
+	$('select').select2({
+		ajax: {
+			url: `Home/${FIND_STOCK_URL}`,
+			data: a => {
+				const data = {}
+				data[SEARCH_TERM_PROP] = a.term
+				return data
+			},
+			processResults: response => {
+				return {
+					results: response.stocks.map((s, i) => ({
+						'id': i,
+						text: s
+					}))
+				}
+			}
+		}
+	})
 })
 
 function unlockCards() {
@@ -53,7 +70,7 @@ function validateKey(form) {
 	input.prop('disabled', true)
 
 	$.post({
-		url: `Home/${CHECK_BRAPI_KEY_VALID}`,
+		url: `Home/${CHECK_BRAPI_KEY_URl}`,
 		data: getDataToCheckBrapiKeyValid(input),
 		success: function (response) {
 			if (!response.result) {
