@@ -44,6 +44,12 @@ namespace StockTrackerConfigurator.Controllers
       return Json(resultado);
     }
 
+    public IActionResult CreateCard()
+    {
+      var model = new CreationCardModel();
+      return PartialView("_CreationCard", model);
+    }
+
     #region Private methods
 
     private IActionResult GetBrapiKey(string brapiKey)

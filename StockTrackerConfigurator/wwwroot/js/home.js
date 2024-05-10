@@ -1,4 +1,8 @@
 $(() => {
+
+	brapiKeyInputEvent()
+	addCardButtonEvent()
+
 	const form = $(`#${API_KEY_FORM_ID}`)
 	const input = form.find(`#${API_KEY_INPUT_ID}`)
 
@@ -14,8 +18,39 @@ $(() => {
 		},
 		complete: () => input.removeAttr('disabled')
 	})
+})
 
-	$('select').select2({
+function addCardButtonEvent() {
+	const cards = $(`#${CARDS_ID}`)
+	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
+	const apiKeyInput = apiKeyform.find(`#${API_KEY_INPUT_ID}`)
+
+	$(document).on('click', `.${ADD_CARD_ID}`, e => {
+
+		if (!apiKeyform.data('validKeyInserted')) {
+			apiKeyform.removeClass('was-validated')
+			apiKeyform.find(".invalid-feedback:first").text("This is key invalid")
+			apiKeyInput.removeClass('is-valid').addClass('is-invalid')
+			return
+		}
+
+		$.get({
+			url: `Home/${CREATE_CARD_URL}`,
+			success: function (response) {
+				if (response.result == false) {
+					return
+				}
+				$(e.currentTarget).closest('.stock-card').addClass('d-none')
+				const card = $(response)
+				cards.append(card)
+				configCardSelect(card)
+			}
+		})
+	})
+}
+
+function configCardSelect(card) {
+	card.find(`#${STOCK_INPUT_ID}`).select2({
 		ajax: {
 			url: `Home/${FIND_STOCK_URL}`,
 			data: a => {
@@ -25,44 +60,35 @@ $(() => {
 			},
 			processResults: response => {
 				return {
-					results: response.stocks.map((s, i) => ({
-						'id': i,
-						text: s
-					}))
+					results: response.stocks.map((text, id) => ({ id, text }))
 				}
 			}
 		}
 	})
-})
+}
+
+function brapiKeyInputEvent() {
+	$(`#${API_KEY_FORM_ID}`).on('submit', function (e) {
+		e.preventDefault()
+
+		if ($(this).data('validKeyInserted')) {
+			const input = $(this).find(`#${API_KEY_INPUT_ID}`)
+			input.val('')
+			$(this).removeData('validKeyInserted')
+			return
+		}
+
+		if (!this.checkValidity()) {
+			this.classList.add('was-validated')
+			showValidationMessages(this)
+		}
+		else validateKey(this)
+	})
+}
+
 
 function unlockCards() {
 
-}
-
-function showValidationMessages(form) {
-	const inputs = $(form).find("input,select,textarea")
-
-	inputs.each(function () {
-		const feedback = $(this).parent().find(".invalid-feedback:first")
-		if (this.validity.valueMissing)
-			feedback.text("Fill this input")
-		else if (this.validity.tooShort) {
-			const limite = $(this).attr("minlength")
-			feedback.text("Must contain at least " + limite + " characters")
-		}
-		else if (this.validity.tooLong) {
-			const limite = $(this).attr("maxlength")
-			feedback.text("Must contain " + limite + " characters at most")
-		}
-		else if (this.validity.rangeOverflow) {
-			const limite = $(this).attr("max")
-			feedback.text(`Insert values under ${limite}`)
-		}
-		else if (this.validity.rangeUnderflow) {
-			const limite = $(this).attr("min")
-			feedback.text(`Insert values above ${limite}`)
-		}
-	})
 }
 
 function validateKey(form) {
@@ -95,20 +121,3 @@ function getDataToCheckBrapiKeyValid(input) {
 	data[`${BRAPI_KEY_PROP}`] = input.val()
 	return data
 }
-
-$(`#${API_KEY_FORM_ID}`).on('submit', function (e) {
-	e.preventDefault()
-
-	if ($(this).data('validKeyInserted')) {
-		const input = $(this).find(`#${API_KEY_INPUT_ID}`)
-		input.val('')
-		$(this).removeData('validKeyInserted')
-		return
-	}
-
-	if (!this.checkValidity()) {
-		this.classList.add('was-validated')
-		showValidationMessages(this)
-	}
-	else validateKey(this)
-})

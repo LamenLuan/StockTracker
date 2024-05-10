@@ -51,3 +51,28 @@ body {
   position: absolute;
   font-size: 48px;
 }
+
+/* Select2
+-------------------------------------------------- */
+.select2-results__option[aria-selected=true] {
+  display: none;
+}
+
+.select2-selection__choice {
+  position: relative !important;
+  padding: 1px 5px 1px 25px !important;
+}
+
+.select2-selection__choice__remove {
+  position: absolute !important;
+  left: 5px !important;
+  top: 8px !important;
+  transform: translateY(-50%) !important;
+  font-size: 30px !important;
+  color: red !important;
+}
+
+.select2-container--default .select2-selection--single {
+  min-height: 36px !important;
+  border: 1px solid #ced4da !important;
+}

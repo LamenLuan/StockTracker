@@ -1,20 +1,21 @@
-﻿@model HomeModel
+﻿@using static StockTrackerConfigurator.Models.HomeModel;
+
+@model HomeModel
 
 @{
   ViewData["Title"] = "Home Page";
-  var teste = new CreationCardViewModel();
-  var addCardButton = new CreationCardViewModel { AddCardButtonMode = true };
+  var addCardBtn = new CreationCardModel(true);
 }
 
 <div class="col-12 mb-5">
-  <form id="@HomeModel.API_KEY_FORM_ID" class="needs-validation" novalidate>
+  <form id="@API_KEY_FORM_ID" class="needs-validation" novalidate>
     <div>
-      <label for="@HomeModel.API_KEY_INPUT_ID" class="form-label">Brapi Key</label>
+      <label for="@API_KEY_INPUT_ID" class="form-label">Brapi Key</label>
 
       <input name="brapiKey"
              type="password"
              class="form-control"
-             id="@HomeModel.API_KEY_INPUT_ID"
+             id="@API_KEY_INPUT_ID"
              required />
 
       <div class="invalid-feedback"></div>
@@ -22,10 +23,9 @@
   </form>
 </div>
 
-<div class="row m-0">
+<div id="@CARDS_ID" class="row m-0">
 
-  <partial name="_CreationCard" model="teste" />
-  <partial name="_CreationCard" model="addCardButton" />
+  <partial name="_CreationCard" model="addCardBtn" />
 
 </div>
 

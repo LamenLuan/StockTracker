@@ -1,14 +1,18 @@
-﻿@model CreationCardViewModel;
+﻿@using static StockTrackerConfigurator.Models.CreationCardModel;
+
+@model CreationCardModel;
 
 <div class="col-2 stock-card">
 
-  <div class="stock-card-border border rounded @(Model.AddCardButtonMode ? "add-card" : string.Empty)">
+  <div 
+    class="stock-card-border border rounded @(Model.AddCardButtonMode ? ADD_CARD_ID : string.Empty)">
 
-    <form class="needs-validation p-3"
+    <form id="@(Model.AddCardButtonMode ? string.Empty : FORM_ID)"
+          class="needs-validation p-3"
           novalidate>
 
       <div class="form-group">
-        <select @(Model.AddCardButtonMode ? string.Empty : "id=stock")
+        <select @(Model.AddCardButtonMode ? string.Empty : $"id={STOCK_INPUT_ID}")
                 class="form-control" 
           required>
         </select>
@@ -18,7 +22,7 @@
 
       <div class="form-group mb-3">
         <label for="price">Price</label>
-        <input @(Model.AddCardButtonMode ? string.Empty : "id=price")
+        <input @(Model.AddCardButtonMode ? string.Empty : $"id={PRICE_INPUT_ID}")
           type="number" 
           class="form-control" 
           required>
@@ -29,13 +33,13 @@
         <label class="col-12" for="percentage">Triggers in (%)</label>
 
         <div class="input-group-prepend w-50">
-          <input @(Model.AddCardButtonMode ? string.Empty : "id=percentage")
+          <input @(Model.AddCardButtonMode ? string.Empty : $"id={PERCENTAGE_INPUT_ID}")
                  type="number" 
             class="form-control" 
             required>
         </div>
 
-        <input @(Model.AddCardButtonMode ? string.Empty : "id=percentage-result")
+        <input @(Model.AddCardButtonMode ? string.Empty : $"id={PERCENTAGE_RESULT_INPUT_ID}")
                type="text" 
           class="form-control" 
           disabled>

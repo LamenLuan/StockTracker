@@ -4,6 +4,7 @@
   {
     public const string API_KEY_FORM_ID = "brapi-key-form";
     public const string API_KEY_INPUT_ID = "brapi-key-input";
+    public const string CARDS_ID = "cards";
 
     public string BrapiKey { get; set; }
 
