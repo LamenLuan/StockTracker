@@ -4,7 +4,7 @@
 
 @{
   ViewData["Title"] = "Home Page";
-  var addCardBtn = new CreationCardModel(true);
+  
 }
 
 <div class="col-12 mb-5">
@@ -25,7 +25,11 @@
 
 <div id="@CARDS_ID" class="row m-0">
 
-  <partial name="_CreationCard" model="addCardBtn" />
+
+  @foreach(var card in Model.Cards)
+  {
+    <partial name="_CreationCard" model="card" />
+  }
 
 </div>
 

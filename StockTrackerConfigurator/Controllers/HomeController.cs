@@ -1,5 +1,6 @@
 ﻿using Common;
 using Common.Extensions;
+using Common.Types;
 using Microsoft.AspNetCore.Mvc;
 using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Models;
@@ -12,7 +13,12 @@ namespace StockTrackerConfigurator.Controllers
 
     public IActionResult Index()
     {
-      var model = new HomeModel();
+      var stockTrackings = FileManager.ReadStockTrackings();
+
+      var viewModelList = new List<CreationCardViewModel> { CreationCardViewModel.AddCardButton };
+      viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
+
+      var model = new HomeModel(viewModelList);
       return View(model: model);
     }
 
@@ -44,10 +50,30 @@ namespace StockTrackerConfigurator.Controllers
       return Json(resultado);
     }
 
-    public IActionResult CreateCard()
+    public IActionResult CreateCardView()
     {
       var model = new CreationCardModel();
       return PartialView("_CreationCard", model);
+    }
+
+    public IActionResult CreateStockTrack(StockTrackDTO dto)
+    {
+      var stockTracking = new StockTracking
+      {
+        RegularMarketPrice = dto.Price,
+        TrackingToBuy = dto.Buying,
+        TriggerPercentage = dto.TriggerPercentage
+      };
+
+      try
+      {
+        FileManager.WriteNewStockTrack(stockTracking);
+        return Json(ReturnDTO.Success());
+      }
+      catch (Exception)
+      {
+        return Json(ReturnDTO.Error());
+      }
     }
 
     #region Private methods

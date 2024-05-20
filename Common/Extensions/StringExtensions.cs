@@ -9,6 +9,11 @@ namespace Common.Extensions
       PropertyNameCaseInsensitive = true
     };
 
+    public static string Serialize<T>(this T value)
+    {
+      return JsonSerializer.Serialize(value, JsonOptions);
+    }
+
     public static T? Deserialize<T>(this string? value)
     {
       if (value == null) return default;

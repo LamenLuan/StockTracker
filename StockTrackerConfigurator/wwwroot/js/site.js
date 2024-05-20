@@ -33,3 +33,27 @@ function showValidationMessages(form) {
 		}
 	})
 }
+
+function serializeObject(form, serializeDisabled) {
+	let objData = {}
+	let disableds = form.find(':disabled')
+	if (serializeDisabled)
+		disableds.removeAttr('disabled')
+
+	let seriArray = form.serializeArray()
+
+	seriArray.forEach(data => {
+		let oldValue = objData[data.name]
+		if (oldValue) {
+			if (Array.isArray(oldValue))
+				objData[data.name].push(data.value)
+			else
+				objData[data.name] = [oldValue, data.value]
+		}
+		else objData[data.name] = data.value
+	})
+
+	disableds.prop('disabled', true)
+
+	return objData
+}

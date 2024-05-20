@@ -1,6 +1,12 @@
-﻿@using static StockTrackerConfigurator.Models.CreationCardModel;
+﻿@using StockTrackerConfigurator.DTOs;
+@using System.Globalization;
+@using static StockTrackerConfigurator.Models.CreationCardModel;
 
 @model CreationCardModel;
+
+@{
+  var triggerPrice = Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
+}
 
 <div class="col-2 stock-card">
 
@@ -13,7 +19,9 @@
 
       <div class="form-group">
         <select @(Model.AddCardButtonMode ? string.Empty : $"id={STOCK_INPUT_ID}")
-                class="form-control" 
+          name="@nameof(StockTrackDTO.StockName)"
+          value="@Model.CardInfo?.StockName"
+          class="form-control" 
           required>
         </select>
       </div>
@@ -23,8 +31,11 @@
       <div class="form-group mb-3">
         <label for="price">Price</label>
         <input @(Model.AddCardButtonMode ? string.Empty : $"id={PRICE_INPUT_ID}")
+          name="@nameof(StockTrackDTO.Price)"
+          value="@Model.CardInfo?.Price.ToString(CultureInfo.InvariantCulture)"
           type="number" 
           class="form-control" 
+          step="0.01"
           required>
       </div>
 
@@ -34,21 +45,38 @@
 
         <div class="input-group-prepend w-50">
           <input @(Model.AddCardButtonMode ? string.Empty : $"id={PERCENTAGE_INPUT_ID}")
-                 type="number" 
-            class="form-control" 
+            name="@nameof(StockTrackDTO.TriggerPercentage)"
+                 value="@Model.CardInfo?.TriggerPercentage.ToString(CultureInfo.InvariantCulture)"
+            type="number" 
+            class="form-control"
+            step="0.01"
             required>
         </div>
 
         <input @(Model.AddCardButtonMode ? string.Empty : $"id={PERCENTAGE_RESULT_INPUT_ID}")
-               type="text" 
+          value="@triggerPrice?.ToString("N2")"
+          type="text" 
           class="form-control" 
           disabled>
 
       </div>
 
       <div class="input-group">
-        <button type="button" class="btn btn-danger w-50">Buying</button>
-        <button type="button" class="btn btn-success w-50">Selling</button>
+
+        <button 
+          type="button" 
+          class="btn @CARD_BTN_CLASS btn-danger w-50"
+          data-buying="true">
+            Buying
+        </button>
+
+        <button 
+          type="button"
+          class="btn @CARD_BTN_CLASS btn-success w-50" 
+          data-buying="false">
+            Selling
+        </button>
+
       </div>
 
     </form>

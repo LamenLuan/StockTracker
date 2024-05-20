@@ -1,7 +1,7 @@
 $(() => {
 
 	brapiKeyInputEvent()
-	addCardButtonEvent()
+	addCardFormEvents()
 
 	const form = $(`#${API_KEY_FORM_ID}`)
 	const input = form.find(`#${API_KEY_INPUT_ID}`)
@@ -13,12 +13,74 @@ $(() => {
 			if (response) {
 				form.data('validKeyInserted', true)
 				input.val(response)
-				unlockCards()
 			}
 		},
 		complete: () => input.removeAttr('disabled')
 	})
 })
+
+//#region Brapi key
+
+function brapiKeyInputEvent() {
+	$(`#${API_KEY_FORM_ID}`).on('submit', function (e) {
+		e.preventDefault()
+
+		if ($(this).data('validKeyInserted')) {
+			const input = $(this).find(`#${API_KEY_INPUT_ID}`)
+			input.val('')
+			$(this).removeData('validKeyInserted')
+			return
+		}
+
+		if (!this.checkValidity()) {
+			this.classList.add('was-validated')
+			showValidationMessages(this)
+		}
+		else validateKey(this)
+	})
+}
+
+function validateKey(form) {
+	const input = $(form).find(`#${API_KEY_INPUT_ID}`)
+	input.prop('disabled', true)
+
+	$.post({
+		url: `Home/${CHECK_BRAPI_KEY_URl}`,
+		data: getDataToCheckBrapiKeyValid(input),
+		success: function (response) {
+			if (!response.result) {
+				showErrorAlert(response)
+				return
+			}
+			$(form).data('validKeyInserted', true)
+		},
+		error: function (response) {
+			if (response.status == 400 || response.status == 401) {
+				form.classList.remove('was-validated')
+				$(form).find(".invalid-feedback:first").text("This is key invalid")
+				input.removeClass('is-valid').addClass('is-invalid')
+			}
+		},
+		complete: () => input.removeAttr('disabled')
+	})
+}
+
+function getDataToCheckBrapiKeyValid(input) {
+	const data = {}
+	data[`${BRAPI_KEY_PROP}`] = input.val()
+	return data
+}
+
+//#endregion
+
+//#region Add card form
+
+function addCardFormEvents() {
+	addCardButtonEvent()
+	stockNameSelectEvent()
+	priceInputEvent()
+	cardButtonEvent()
+}
 
 function addCardButtonEvent() {
 	const cards = $(`#${CARDS_ID}`)
@@ -60,64 +122,72 @@ function configCardSelect(card) {
 			},
 			processResults: response => {
 				return {
-					results: response.stocks.map((text, id) => ({ id, text }))
+					results: response.stocks.map(text => ({ id: text, text }))
 				}
 			}
 		}
 	})
 }
 
-function brapiKeyInputEvent() {
-	$(`#${API_KEY_FORM_ID}`).on('submit', function (e) {
-		e.preventDefault()
+function stockNameSelectEvent() {
+	$(document).on('select2:select', `#${STOCK_INPUT_ID}`, function () {
+		$(`#${PRICE_INPUT_ID}`).trigger("focus")
+	})
+}
 
-		if ($(this).data('validKeyInserted')) {
-			const input = $(this).find(`#${API_KEY_INPUT_ID}`)
-			input.val('')
-			$(this).removeData('validKeyInserted')
+function priceInputEvent() {
+	$(document).on('change', `#${PRICE_INPUT_ID}`, function () {
+		$(`#${PERCENTAGE_INPUT_ID}`).trigger("focus")
+	})
+}
+
+function cardButtonEvent() {
+	$(document).on('click', `.${CARD_BTN_CLASS}`, function () {
+		const form = $(`#${FORM_ID}`) 
+		const btn = $(this)
+		const btns = $(`.${CARD_BTN_CLASS}`)
+
+		if (!form[0].checkValidity()) {
+			form.addClass('was-validated')
 			return
 		}
 
-		if (!this.checkValidity()) {
-			this.classList.add('was-validated')
-			showValidationMessages(this)
-		}
-		else validateKey(this)
+		btns.prop('disabled', true)
+
+		$.post({
+			url: `Home/${CREATE_STOCK_TRACK_URL}`,
+			data: getAddCardData(form, btn),
+			success: (response) => {
+				if (!response.result) {
+					showErrorAlert(response)
+					return
+				}
+				location.reload()
+			},
+			error: (response) => showErrorAlert(response),
+			complete: () => btns.removeAttr('disabled')
+		})
 	})
 }
 
+//function percentageInputEvent() {
+//	$(document).on('change', `.${PERCENTAGE_INPUT_ID}`, function () {
+//		const pctgInput = $(this)
+//		const priceInput = $(`#${PRICE_INPUT_ID}`)
+//		const pctgResultInput = $(`#${PERCENTAGE_RESULT_INPUT_ID}`)
+//		const price = parseFloat(priceInput.val())
+//		if (price) {
+//			const pctg = parseFloat(pctgInput.val())
+//			if (!pctg) return
+//			const result
+//		}
+//	})
+//}
 
-function unlockCards() {
-
-}
-
-function validateKey(form) {
-	const input = $(form).find(`#${API_KEY_INPUT_ID}`)
-	input.prop('disabled', true)
-
-	$.post({
-		url: `Home/${CHECK_BRAPI_KEY_URl}`,
-		data: getDataToCheckBrapiKeyValid(input),
-		success: function (response) {
-			if (!response.result) {
-				showErrorAlert(response)
-				return
-			}
-			$(form).data('validKeyInserted', true)
-		},
-		error: function (response) {
-			if (response.status == 400 || response.status == 401) {
-				form.classList.remove('was-validated')
-				$(form).find(".invalid-feedback:first").text("This is key invalid")
-				input.removeClass('is-valid').addClass('is-invalid')
-			}
-		},
-		complete: () => input.removeAttr('disabled')
-	})
-}
-
-function getDataToCheckBrapiKeyValid(input) {
-	const data = {}
-	data[`${BRAPI_KEY_PROP}`] = input.val()
+function getAddCardData(form, btn) {
+	const data = serializeObject(form)
+	data[BUYING_PROP] = btn.data('buying')
 	return data
 }
+
+//#endregion
