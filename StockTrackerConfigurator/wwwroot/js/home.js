@@ -80,6 +80,7 @@ function addCardFormEvents() {
 	stockNameSelectEvent()
 	priceInputEvent()
 	cardButtonEvent()
+	percentageInputEvent()
 }
 
 function addCardButtonEvent() {
@@ -87,7 +88,7 @@ function addCardButtonEvent() {
 	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
 	const apiKeyInput = apiKeyform.find(`#${API_KEY_INPUT_ID}`)
 
-	$(document).on('click', `.${ADD_CARD_ID}`, e => {
+	$(document).on('click', `#${ADD_CARD_ID}`, e => {
 
 		if (!apiKeyform.data('validKeyInserted')) {
 			apiKeyform.removeClass('was-validated')
@@ -104,7 +105,7 @@ function addCardButtonEvent() {
 				}
 				$(e.currentTarget).closest('.stock-card').addClass('d-none')
 				const card = $(response)
-				cards.append(card)
+				cards.prepend(card)
 				configCardSelect(card)
 			}
 		})
@@ -170,19 +171,26 @@ function cardButtonEvent() {
 	})
 }
 
-//function percentageInputEvent() {
-//	$(document).on('change', `.${PERCENTAGE_INPUT_ID}`, function () {
-//		const pctgInput = $(this)
-//		const priceInput = $(`#${PRICE_INPUT_ID}`)
-//		const pctgResultInput = $(`#${PERCENTAGE_RESULT_INPUT_ID}`)
-//		const price = parseFloat(priceInput.val())
-//		if (price) {
-//			const pctg = parseFloat(pctgInput.val())
-//			if (!pctg) return
-//			const result
-//		}
-//	})
-//}
+function percentageInputEvent() {
+	$(document).on('change', `#${PERCENTAGE_INPUT_ID}`, function () {
+		const pctgInput = $(this)
+		const pctg = parseFloat(pctgInput.val())
+		const priceInput = $(`#${PRICE_INPUT_ID}`)
+		const price = parseFloat(priceInput.val())
+		const pctgResultInput = $(`#${PERCENTAGE_RESULT_INPUT_ID}`)
+		if (!price || !pctg) {
+			pctgResultInput.val('')
+			return
+		}
+		else {
+			const buying = JSON.parse($(`.${OPERATION_INPUT_CLASS}:checked`).val())
+			const result = buying
+				? price * (1 - (pctg / 100))
+				: price * (1 + (pctg / 100))
+			pctgResultInput.val(result.toFixed(2))
+		}
+	})
+}
 
 function getAddCardData(form, btn) {
 	const data = serializeObject(form)

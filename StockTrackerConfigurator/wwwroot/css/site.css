@@ -28,28 +28,36 @@ body {
   justify-content: center;
 }
 
-.add-card {
+#add-card {
   cursor: pointer;
-  
 }
 
-.add-card:hover {
+#add-card:hover {
   background-color: darkgray;
   transition: 0.6s;
 }
 
-.add-card:hover .card-plus-sign {
+#add-card:hover .card-plus-sign {
   font-size: 64px;
   transition: 0.6s;
 }
 
-.add-card form {
+#add-card form {
   visibility: hidden;
 }
 
 .card-plus-sign {
   position: absolute;
   font-size: 48px;
+}
+
+.remove-btn {
+  width: 100%;
+}
+
+/* Button Group */
+.btn-group {
+  width: 100%;
 }
 
 /* Select2

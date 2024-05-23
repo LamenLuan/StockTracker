@@ -52,8 +52,8 @@ namespace StockTrackerConfigurator.Controllers
 
     public IActionResult CreateCardView()
     {
-      var model = new CreationCardModel();
-      return PartialView("_CreationCard", model);
+      var model = new CreationCardModel(CreationCardViewModel.CardForm);
+      return PartialView("_FormCreationCard", model);
     }
 
     public IActionResult CreateStockTrack(StockTrackDTO dto)
@@ -67,7 +67,7 @@ namespace StockTrackerConfigurator.Controllers
 
       try
       {
-        FileManager.WriteNewStockTrack(stockTracking);
+        //FileManager.WriteNewStockTrack(stockTracking);
         return Json(ReturnDTO.Success());
       }
       catch (Exception)

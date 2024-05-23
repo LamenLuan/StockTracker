@@ -28,7 +28,13 @@
 
   @foreach(var card in Model.Cards)
   {
-    <partial name="_CreationCard" model="card" />
+    var cardViewName = "_AddCreationCard";
+    if (card.CardType == StockTrackerConfigurator.Types.CardType.DETAIL)
+      cardViewName = "_DetailCreationCard";
+    else if (card.CardType == StockTrackerConfigurator.Types.CardType.FORM)
+      cardViewName = "_FormCreationCard";
+
+    <partial name="@cardViewName" model="card" />
   }
 
 </div>

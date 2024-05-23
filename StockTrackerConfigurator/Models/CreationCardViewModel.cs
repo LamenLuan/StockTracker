@@ -1,15 +1,19 @@
 ﻿using Common.Types;
 using StockTrackerConfigurator.DTOs;
+using StockTrackerConfigurator.Types;
 
 namespace StockTrackerConfigurator.Models
 {
   public class CreationCardViewModel
   {
-    public bool AddCardButtonMode { get; set; }
+    public CardType CardType { get; set; }
     public StockTrackDTO? CardInfo { get; set; }
 
     public static CreationCardViewModel AddCardButton
-      => new() { AddCardButtonMode = true };
+      => new() { CardType = CardType.ADD };
+
+    public static CreationCardViewModel CardForm
+      => new() { CardType = CardType.FORM };
 
     public CreationCardViewModel() { }
 
@@ -22,6 +26,7 @@ namespace StockTrackerConfigurator.Models
         StockName = stock.Symbol,
         TriggerPercentage = stock.TriggerPercentage
       };
+      CardType = CardType.DETAIL;
     }
   }
 }

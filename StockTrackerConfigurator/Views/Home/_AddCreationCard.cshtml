@@ -1,0 +1,67 @@
+﻿@using StockTrackerConfigurator.DTOs;
+@using System.Globalization;
+@using static StockTrackerConfigurator.Models.CreationCardModel;
+
+@model CreationCardModel;
+
+<div class="col-2 stock-card">
+
+  <div id="@ADD_CARD_ID" class="stock-card-border border rounded">
+
+    <form class="needs-validation p-3" novalidate>
+
+      <div class="form-group">
+        <select name="@nameof(StockTrackDTO.StockName)"
+                class="form-control"
+                required>
+        </select>
+      </div>
+
+      <hr />
+
+      <div class="form-group mb-3">
+        <label for="price">Price</label>
+        <input name="@nameof(StockTrackDTO.Price)"
+               type="number"
+               class="form-control"
+               step="0.01"
+               required>
+      </div>
+
+      <div class="input-group mb-3">
+
+        <label class="col-12" for="percentage">Triggers in (%)</label>
+
+        <div class="input-group-prepend w-50">
+          <input name="@nameof(StockTrackDTO.TriggerPercentage)"
+                 type="number"
+                 class="form-control"
+                 step="0.01"
+                 required>
+        </div>
+
+        <input type="text"
+               class="form-control"
+               disabled>
+
+      </div>
+
+      <div class="input-group">
+
+        <button type="button"
+                class="btn btn-primary w-100"
+                data-buying="true">
+          Create
+        </button>
+
+      </div>
+
+    </form>
+
+    <div class="card-plus-sign">
+      <i class="fa-solid fa-plus"></i>
+    </div>
+
+  </div>
+
+</div>
