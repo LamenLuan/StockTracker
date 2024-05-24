@@ -32,9 +32,10 @@ namespace Common
 
     public static bool WriteNewStockTrack(StockTracking stockTrack)
     {
-      using StreamWriter file = new(StocksPath, true);
-      var stockJsonStr = stockTrack.Serialize();
-      file.WriteLine(stockJsonStr);
+      var stocks = ReadStockTrackings();
+      stocks.Add(stockTrack);
+      using StreamWriter file = new(StocksPath);
+      file.Write(stocks.Serialize());
       return true;
     }
 

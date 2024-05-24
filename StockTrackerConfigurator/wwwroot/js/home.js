@@ -79,6 +79,7 @@ function addCardFormEvents() {
 	addCardButtonEvent()
 	stockNameSelectEvent()
 	priceInputEvent()
+	operationBtnsEvent()
 	cardButtonEvent()
 	percentageInputEvent()
 }
@@ -136,15 +137,42 @@ function stockNameSelectEvent() {
 	})
 }
 
+function operationBtnsEvent() {
+	$(document).on('click', `.${OPERATION_INPUT_CLASS}`, updatePctgResult)
+}
+
 function priceInputEvent() {
-	$(document).on('change', `#${PRICE_INPUT_ID}`, function () {
-		$(`#${PERCENTAGE_INPUT_ID}`).trigger("focus")
-	})
+	$(document).on('change', `#${PRICE_INPUT_ID}`, updatePctgResult)
+}
+
+function percentageInputEvent() {
+	$(document).on('change', `#${PERCENTAGE_INPUT_ID}`, updatePctgResult)
+}
+
+function updatePctgResult() {
+	const form = $(`#${FORM_ID}`)
+	const pctgInput = form.find(`#${PERCENTAGE_INPUT_ID}`)
+	const pctg = parseFloat(pctgInput.val())
+	const priceInput = form.find(`#${PRICE_INPUT_ID}`)
+	const price = parseFloat(priceInput.val())
+	const pctgResultInput = form.find(`#${PERCENTAGE_RESULT_INPUT_ID}`)
+
+	if (Number.isNaN(pctg) || Number.isNaN(price)) {
+		pctgResultInput.val('')
+		return
+	}
+	else {
+		const buying = JSON.parse(form.find(`.${OPERATION_INPUT_CLASS}:checked`).val())
+		const result = buying
+			? price * (1 - (pctg / 100))
+			: price * (1 + (pctg / 100))
+		pctgResultInput.val(result.toFixed(2))
+	}
 }
 
 function cardButtonEvent() {
 	$(document).on('click', `.${CARD_BTN_CLASS}`, function () {
-		const form = $(`#${FORM_ID}`) 
+		const form = $(`#${FORM_ID}`)
 		const btn = $(this)
 		const btns = $(`.${CARD_BTN_CLASS}`)
 
@@ -157,7 +185,7 @@ function cardButtonEvent() {
 
 		$.post({
 			url: `Home/${CREATE_STOCK_TRACK_URL}`,
-			data: getAddCardData(form, btn),
+			data: serializeObject(form),
 			success: (response) => {
 				if (!response.result) {
 					showErrorAlert(response)
@@ -169,33 +197,6 @@ function cardButtonEvent() {
 			complete: () => btns.removeAttr('disabled')
 		})
 	})
-}
-
-function percentageInputEvent() {
-	$(document).on('change', `#${PERCENTAGE_INPUT_ID}`, function () {
-		const pctgInput = $(this)
-		const pctg = parseFloat(pctgInput.val())
-		const priceInput = $(`#${PRICE_INPUT_ID}`)
-		const price = parseFloat(priceInput.val())
-		const pctgResultInput = $(`#${PERCENTAGE_RESULT_INPUT_ID}`)
-		if (!price || !pctg) {
-			pctgResultInput.val('')
-			return
-		}
-		else {
-			const buying = JSON.parse($(`.${OPERATION_INPUT_CLASS}:checked`).val())
-			const result = buying
-				? price * (1 - (pctg / 100))
-				: price * (1 + (pctg / 100))
-			pctgResultInput.val(result.toFixed(2))
-		}
-	})
-}
-
-function getAddCardData(form, btn) {
-	const data = serializeObject(form)
-	data[BUYING_PROP] = btn.data('buying')
-	return data
 }
 
 //#endregion

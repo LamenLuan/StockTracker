@@ -62,12 +62,13 @@ namespace StockTrackerConfigurator.Controllers
       {
         RegularMarketPrice = dto.Price,
         TrackingToBuy = dto.Buying,
-        TriggerPercentage = dto.TriggerPercentage
+        TriggerPercentage = dto.TriggerPercentage,
+        Symbol = dto.StockName
       };
 
       try
       {
-        //FileManager.WriteNewStockTrack(stockTracking);
+        FileManager.WriteNewStockTrack(stockTracking);
         return Json(ReturnDTO.Success());
       }
       catch (Exception)
