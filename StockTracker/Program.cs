@@ -22,7 +22,7 @@ internal class Program
   private static void Main()
   {
     ReadSettings();
-    //WaitUntilStartTime();
+    WaitUntilStartTime();
 
     while (true)
     {

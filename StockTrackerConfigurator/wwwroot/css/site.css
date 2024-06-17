@@ -19,6 +19,13 @@ body {
 
 .stock-card {
   padding: 0;
+}
+
+.stock-card > div {
+  margin-bottom: 1rem;
+}
+
+.stock-card:not(:nth-child(6n)) > div {
   margin-right: 1rem;
 }
 

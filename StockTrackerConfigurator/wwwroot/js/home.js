@@ -104,7 +104,7 @@ function addCardButtonEvent() {
 				if (response.result == false) {
 					return
 				}
-				$(e.currentTarget).closest('.stock-card').addClass('d-none')
+				$(e.currentTarget).closest('.stock-card').remove()
 				const card = $(response)
 				cards.prepend(card)
 				configCardSelect(card)

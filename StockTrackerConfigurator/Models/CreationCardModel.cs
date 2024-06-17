@@ -14,6 +14,7 @@ namespace StockTrackerConfigurator.Models
     public const string ADD_CARD_ID = "add-card";
     public const string CARD_BTN_CLASS = "card-btn";
     public const string CARD_REMOVE_BTN = "remove-btn";
+    public const string CARD_EDIT_BTN = "edit-btn";
 
     public CardType CardType { get; set; }
     public StockTrackDTO? CardInfo { get; set; }

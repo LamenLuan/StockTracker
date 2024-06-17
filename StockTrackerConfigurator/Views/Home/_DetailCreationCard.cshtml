@@ -9,64 +9,64 @@
 }
 
 <div class="col-2 stock-card">
+  <div>
 
-  <div 
-    class="stock-card-border border rounded">
+    <div class="stock-card-border border rounded">
 
-    <form class="needs-validation p-3"
-          novalidate>
+      <form class="needs-validation p-3"
+            novalidate>
 
-      <div class="form-group">
-        <select class="form-control" 
-          required>
-          <option>@Model.CardInfo?.StockName</option>
-        </select>
-      </div>
-
-      <hr />
-
-      <div class="form-group mb-3">
-        <label for="price">Price</label>
-        <input value="@Model.CardInfo?.Price.ToString(CultureInfo.InvariantCulture)"
-          type="number" 
-          class="form-control" 
-          step="0.01"
-          required>
-      </div>
-
-      <div class="input-group mb-3">
-
-        <label class="col-12" for="percentage">Triggers in (%)</label>
-
-        <div class="input-group-prepend w-50">
-          <input value="@Model.CardInfo?.TriggerPercentage.ToString(CultureInfo.InvariantCulture)"
-            type="number" 
-            class="form-control"
-            step="0.01"
-            required>
+        <div class="form-group">
+          <input value="@Model.CardInfo?.StockName"
+                 type="text"
+                 class="form-control"
+                 disabled>
         </div>
 
-        <input value="@triggerPrice?.ToString("N2")"
-          type="text" 
-          class="form-control" 
-          disabled>
+        <hr />
 
-      </div>
-
-      <div class="input-group">
-
-        @if(Model.CardInfo != null)
-        {
-          <button type="button"
-                  class="btn @CreationCardModel.CARD_REMOVE_BTN btn-@(Model.CardInfo.Buying ? "danger" : "success")"
-                  data-buying="true">
-            @(Model.CardInfo.Buying ? "Bougth" : "Sold")
+        <div class="input-group mb-3">
+          <button type="button" class="w-100 btn btn-@(Model.CardInfo.Buying ? "danger" : "success")">
+            @(Model.CardInfo.Buying ? "Buying" : "Selling")
           </button>
-        }
-      </div>
+        </div>
 
-    </form>
+        <div class="form-group mb-3">
+          <label for="price">Price</label>
+          <input value="@Model.CardInfo?.Price.ToString(CultureInfo.InvariantCulture)"
+                 type="text"
+                 class="form-control"
+                 disabled>
+        </div>
 
-	</div>
+        <div class="input-group mb-3">
 
+          <label class="col-12" for="percentage">Triggers in (%)</label>
+
+          <div class="input-group-prepend w-50">
+            <input value="@Model.CardInfo?.TriggerPercentage.ToString(CultureInfo.InvariantCulture)"
+                   type="text"
+                   class="form-control"
+                   disabled>
+          </div>
+
+          <input value="@triggerPrice?.ToString("N2")"
+                 type="text"
+                 class="form-control"
+                 disabled>
+
+        </div>
+
+        <div class="input-group">
+          <button type="button"
+                  class="btn @CreationCardModel.CARD_REMOVE_BTN btn-danger btn-remove">
+            Remove
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
 </div>
