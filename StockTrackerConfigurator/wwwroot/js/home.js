@@ -2,6 +2,7 @@ $(() => {
 
 	brapiKeyInputEvent()
 	addCardFormEvents()
+	viewCardRemoveBtnEvent()
 
 	const form = $(`#${API_KEY_FORM_ID}`)
 	const input = form.find(`#${API_KEY_INPUT_ID}`)
@@ -73,7 +74,7 @@ function getDataToCheckBrapiKeyValid(input) {
 
 //#endregion
 
-//#region Add card form
+//#region Add card
 
 function addCardFormEvents() {
 	addCardButtonEvent()
@@ -195,6 +196,29 @@ function cardButtonEvent() {
 			},
 			error: (response) => showErrorAlert(response),
 			complete: () => btns.removeAttr('disabled')
+		})
+	})
+}
+
+//#endregion
+
+//#region View card
+
+function viewCardRemoveBtnEvent() {
+	$(document).on('click', `.${CARD_REMOVE_CLASS}`, (e) => {
+		const btn = $(e.currentTarget)
+		const form = btn.closest('form')
+		$.post({
+			url: `Home/${REMOVE_STOCK_TRACK_URL}`,
+			data: serializeObject(form, true),
+			success: (response) => {
+				if (!response.result) {
+					showErrorAlert(response)
+					return
+				}
+				location.reload()
+			},
+			error: (response) => showErrorAlert(response)
 		})
 	})
 }

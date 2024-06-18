@@ -34,6 +34,11 @@ namespace Common
     {
       var stocks = ReadStockTrackings();
       stocks.Add(stockTrack);
+      return WriteStockTrackings(stocks);
+    }
+
+    public static bool WriteStockTrackings(List<StockTracking> stocks)
+    {
       using StreamWriter file = new(StocksPath);
       file.Write(stocks.Serialize());
       return true;

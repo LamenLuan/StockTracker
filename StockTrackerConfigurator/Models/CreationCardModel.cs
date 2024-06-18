@@ -12,7 +12,9 @@ namespace StockTrackerConfigurator.Models
     public const string PERCENTAGE_INPUT_ID = "percentage";
     public const string PERCENTAGE_RESULT_INPUT_ID = "percentage-result";
     public const string ADD_CARD_ID = "add-card";
+
     public const string CARD_BTN_CLASS = "card-btn";
+
     public const string CARD_REMOVE_BTN = "remove-btn";
     public const string CARD_EDIT_BTN = "edit-btn";
 

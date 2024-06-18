@@ -17,7 +17,8 @@
             novalidate>
 
         <div class="form-group">
-          <input value="@Model.CardInfo?.StockName"
+          <input name="@nameof(StockTrackDTO.StockName)"
+                 value="@Model.CardInfo?.StockName"
                  type="text"
                  class="form-control"
                  disabled>
@@ -25,8 +26,12 @@
 
         <hr />
 
+        <input type="hidden"
+               name="@nameof(StockTrackDTO.Buying)"
+               value="@Model.CardInfo?.Buying.ToString().ToLower()" />
+
         <div class="input-group mb-3">
-          <button type="button" class="w-100 btn btn-@(Model.CardInfo.Buying ? "danger" : "success")">
+          <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")">
             @(Model.CardInfo.Buying ? "Buying" : "Selling")
           </button>
         </div>

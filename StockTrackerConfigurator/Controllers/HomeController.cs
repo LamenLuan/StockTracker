@@ -32,7 +32,7 @@ namespace StockTrackerConfigurator.Controllers
     {
       var url = $"https://brapi.dev/api/quote/PETR4?token={dto.Key}";
       var resultado = _client.GetStringAsync(url).Result;
-      if (resultado == null) return Json(ReturnDTO.Error());
+      if (resultado == null) return Error();
       FileManager.WriteBrapiKey(dto.Key);
       var returnDto = ReturnDTO.Success(dto.Key);
       return Json(returnDto);
@@ -41,11 +41,11 @@ namespace StockTrackerConfigurator.Controllers
     public IActionResult FindStocks(StockSearchDTO dto)
     {
       var token = FileManager.ReadBrapiKey();
-      if (!token.HasContent()) return Json(ReturnDTO.Error());
+      if (!token.HasContent()) return Error();
 
       var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={token}";
       var resultado = _client.GetFromJsonAsync<StockListDTO>(url).Result;
-      if (resultado == null) return Json(ReturnDTO.Error());
+      if (resultado == null) return Error();
 
       return Json(resultado);
     }
@@ -69,12 +69,21 @@ namespace StockTrackerConfigurator.Controllers
       try
       {
         FileManager.WriteNewStockTrack(stockTracking);
-        return Json(ReturnDTO.Success());
+        return Success();
       }
       catch (Exception)
       {
-        return Json(ReturnDTO.Error());
+        return Error();
       }
+    }
+
+    public IActionResult RemoveStockTrack(StockTrackDTO dto)
+    {
+      var stocks = FileManager.ReadStockTrackings();
+      var idx = stocks.FindIndex(s => s.Symbol.Equals(dto.StockName) && s.TrackingToBuy == dto.Buying);
+      if (idx < 0) return Error();
+      stocks.RemoveAt(idx);
+      return FileManager.WriteStockTrackings(stocks) ? Success() : Error();
     }
 
     #region Private methods
@@ -87,6 +96,9 @@ namespace StockTrackerConfigurator.Controllers
 
       return Json(response);
     }
+
+    private IActionResult Error() => Json(ReturnDTO.Error());
+    private IActionResult Success() => Json(ReturnDTO.Success());
 
     #endregion
   }
