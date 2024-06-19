@@ -46,7 +46,7 @@ function validateKey(form) {
 	input.prop('disabled', true)
 
 	$.post({
-		url: `Home/${CHECK_BRAPI_KEY_URl}`,
+		url: `Home/${CHECK_BRAPI_KEY_URL}`,
 		data: getDataToCheckBrapiKeyValid(input),
 		success: function (response) {
 			if (!response.result) {
@@ -58,7 +58,7 @@ function validateKey(form) {
 		error: function (response) {
 			if (response.status == 400 || response.status == 401) {
 				form.classList.remove('was-validated')
-				$(form).find(".invalid-feedback:first").text("This is key invalid")
+				$(form).find(".invalid-feedback:first").text("This key is invalid")
 				input.removeClass('is-valid').addClass('is-invalid')
 			}
 		},
@@ -87,17 +87,9 @@ function addCardFormEvents() {
 
 function addCardButtonEvent() {
 	const cards = $(`#${CARDS_ID}`)
-	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
-	const apiKeyInput = apiKeyform.find(`#${API_KEY_INPUT_ID}`)
 
 	$(document).on('click', `#${ADD_CARD_ID}`, e => {
-
-		if (!apiKeyform.data('validKeyInserted')) {
-			apiKeyform.removeClass('was-validated')
-			apiKeyform.find(".invalid-feedback:first").text("This is key invalid")
-			apiKeyInput.removeClass('is-valid').addClass('is-invalid')
-			return
-		}
+		if (validApiKeyNotInserted()) return
 
 		$.get({
 			url: `Home/${CREATE_CARD_URL}`,
@@ -206,6 +198,8 @@ function cardButtonEvent() {
 
 function viewCardRemoveBtnEvent() {
 	$(document).on('click', `.${CARD_REMOVE_CLASS}`, (e) => {
+		if (validApiKeyNotInserted()) return
+
 		const btn = $(e.currentTarget)
 		const form = btn.closest('form')
 		$.post({
@@ -224,3 +218,17 @@ function viewCardRemoveBtnEvent() {
 }
 
 //#endregion
+
+function validApiKeyNotInserted() {
+	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
+	const apiKeyInput = apiKeyform.find(`#${API_KEY_INPUT_ID}`)
+
+	if (!apiKeyform.data('validKeyInserted')) {
+		apiKeyform.removeClass('was-validated')
+		apiKeyform.find(".invalid-feedback:first").text("This key is invalid")
+		apiKeyInput.removeClass('is-valid').addClass('is-invalid')
+		return true
+	}
+
+	return false
+}

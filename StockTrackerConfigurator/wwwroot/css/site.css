@@ -101,3 +101,11 @@ body {
 .was-validated select:invalid ~ .select2 .select2-selection {
   border-color: #dc3545 !important;
 }
+
+.detail-card input:disabled {
+  background-color: inherit;
+}
+
+.detail-card button:disabled {
+  opacity: 1;
+}

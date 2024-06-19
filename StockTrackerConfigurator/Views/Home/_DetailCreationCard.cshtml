@@ -8,7 +8,7 @@
   var triggerPrice = Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
 }
 
-<div class="col-2 stock-card">
+<div class="col-2 stock-card detail-card">
   <div>
 
     <div class="stock-card-border border rounded">
@@ -31,14 +31,14 @@
                value="@Model.CardInfo?.Buying.ToString().ToLower()" />
 
         <div class="input-group mb-3">
-          <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")">
+          <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")" disabled>
             @(Model.CardInfo.Buying ? "Buying" : "Selling")
           </button>
         </div>
 
         <div class="form-group mb-3">
-          <label for="price">Price</label>
-          <input value="@Model.CardInfo?.Price.ToString(CultureInfo.InvariantCulture)"
+          <label for="price">Price (R$)</label>
+          <input value="@(Model.CardInfo != null ? Model.CardInfo.Price : string.Empty)"
                  type="text"
                  class="form-control"
                  disabled>
@@ -49,13 +49,13 @@
           <label class="col-12" for="percentage">Triggers in (%)</label>
 
           <div class="input-group-prepend w-50">
-            <input value="@Model.CardInfo?.TriggerPercentage.ToString(CultureInfo.InvariantCulture)"
+            <input value="@Model.CardInfo?.TriggerPercentage"
                    type="text"
                    class="form-control"
                    disabled>
           </div>
 
-          <input value="@triggerPrice?.ToString("N2")"
+          <input value="@(triggerPrice.HasValue ? triggerPrice.Value.ToString("N2") : string.Empty)"
                  type="text"
                  class="form-control"
                  disabled>
