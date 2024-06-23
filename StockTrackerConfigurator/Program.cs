@@ -1,3 +1,7 @@
+#if !DEBUG
+using System.Diagnostics;
+#endif
+
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 

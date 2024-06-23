@@ -21,6 +21,7 @@ internal class Program
 
   private static void Main()
   {
+    if (IsMarketClosedDay()) return;
     ReadSettings();
     WaitUntilStartTime();
 
@@ -162,6 +163,12 @@ internal class Program
     {
       return false;
     }
+  }
+
+  private static bool IsMarketClosedDay()
+  {
+    var day = DateTime.Now.DayOfWeek;
+    return day == DayOfWeek.Sunday || day == DayOfWeek.Saturday;
   }
 
   private static void WaitUntilStartTime()

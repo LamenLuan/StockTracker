@@ -2,6 +2,15 @@ html {
   font-size: 14px;
 }
 
+main {
+  padding-left: 3vw;
+  padding-right: 3vw;
+}
+
+footer {
+  padding-left: 1vw;
+}
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
