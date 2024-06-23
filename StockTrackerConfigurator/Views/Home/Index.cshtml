@@ -1,0 +1,45 @@
+﻿@using static StockTrackerConfigurator.Models.HomeModel;
+
+@model HomeModel
+
+@{
+  ViewData["Title"] = "Home Page";
+  
+}
+
+<div class="col-12 mb-5">
+  <form id="@API_KEY_FORM_ID" class="needs-validation" novalidate>
+    <div>
+      <label for="@API_KEY_INPUT_ID" class="form-label">Brapi Key</label>
+
+      <input name="brapiKey"
+             type="password"
+             class="form-control"
+             id="@API_KEY_INPUT_ID"
+             required />
+
+      <div class="invalid-feedback"></div>
+    </div>
+  </form>
+</div>
+
+<div id="@CARDS_ID" class="row m-0">
+
+
+  @foreach(var card in Model.Cards)
+  {
+    var cardViewName = "_AddCreationCard";
+    if (card.CardType == StockTrackerConfigurator.Types.CardType.DETAIL)
+      cardViewName = "_DetailCreationCard";
+    else if (card.CardType == StockTrackerConfigurator.Types.CardType.FORM)
+      cardViewName = "_FormCreationCard";
+
+    <partial name="@cardViewName" model="card" />
+  }
+
+</div>
+
+@section Scripts{
+	<partial name="_Declarings" />
+	<script src="~/js/home.js"></script>
+}

@@ -1,0 +1,120 @@
+html {
+  font-size: 14px;
+}
+
+main {
+  padding-left: 3vw;
+  padding-right: 3vw;
+}
+
+footer {
+  padding-left: 1vw;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.stock-card {
+  padding: 0;
+}
+
+.stock-card > div {
+  margin-bottom: 1rem;
+}
+
+.stock-card:not(:nth-child(6n)) > div {
+  margin-right: 1rem;
+}
+
+.stock-card-border {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#add-card {
+  cursor: pointer;
+}
+
+#add-card:hover {
+  background-color: darkgray;
+  transition: 0.6s;
+}
+
+#add-card:hover .card-plus-sign {
+  font-size: 64px;
+  transition: 0.6s;
+}
+
+#add-card form {
+  visibility: hidden;
+}
+
+.card-plus-sign {
+  position: absolute;
+  font-size: 48px;
+}
+
+.remove-btn {
+  width: 100%;
+}
+
+/* Button Group */
+.btn-group {
+  width: 100%;
+}
+
+/* Select2
+-------------------------------------------------- */
+.select2-results__option[aria-selected=true] {
+  display: none;
+}
+
+.select2-selection__choice {
+  position: relative !important;
+  padding: 1px 5px 1px 25px !important;
+}
+
+.select2-selection__choice__remove {
+  position: absolute !important;
+  left: 5px !important;
+  top: 8px !important;
+  transform: translateY(-50%) !important;
+  font-size: 30px !important;
+  color: red !important;
+}
+
+.select2-container--default .select2-selection--single {
+  min-height: 36px !important;
+  border: 1px solid #ced4da !important;
+}
+
+.form-control.is-valid, .was-validated .form-control:valid {
+  background-image: unset;
+  border: 1px solid #ced4da;
+  padding-right: .375rem;
+}
+
+.was-validated select:invalid ~ .select2 .select2-selection {
+  border-color: #dc3545 !important;
+}
+
+.detail-card input:disabled {
+  background-color: inherit;
+}
+
+.detail-card button:disabled {
+  opacity: 1;
+}

@@ -1,0 +1,77 @@
+﻿@using StockTrackerConfigurator.DTOs;
+@using System.Globalization;
+@using static StockTrackerConfigurator.Models.CreationCardModel;
+
+@model CreationCardModel;
+
+@{
+  var triggerPrice = Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
+}
+
+<div class="col-2 stock-card detail-card">
+  <div>
+
+    <div class="stock-card-border border rounded">
+
+      <form class="needs-validation p-3"
+            novalidate>
+
+        <div class="form-group">
+          <input name="@nameof(StockTrackDTO.StockName)"
+                 value="@Model.CardInfo?.StockName"
+                 type="text"
+                 class="form-control"
+                 disabled>
+        </div>
+
+        <hr />
+
+        <input type="hidden"
+               name="@nameof(StockTrackDTO.Buying)"
+               value="@Model.CardInfo?.Buying.ToString().ToLower()" />
+
+        <div class="input-group mb-3">
+          <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")" disabled>
+            @(Model.CardInfo.Buying ? "Buying" : "Selling")
+          </button>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="price">Price</label>
+          <input value="@(Model.CardInfo != null ? $"R$ {Model.CardInfo.Price.ToString("N2", CultureInfo.CurrentCulture)}" : string.Empty)"
+                 type="text"
+                 class="form-control"
+                 disabled>
+        </div>
+
+        <div class="input-group mb-3">
+
+          <label class="col-12" for="percentage">Triggers in (%)</label>
+
+          <div class="input-group-prepend w-50">
+            <input value="@Model.CardInfo?.TriggerPercentage"
+                   type="text"
+                   class="form-control"
+                   disabled>
+          </div>
+
+          <input value="@(triggerPrice.HasValue ? $"R$ {triggerPrice.Value.ToString("N2", CultureInfo.CurrentCulture)}" : string.Empty)"
+                 type="text"
+                 class="form-control"
+                 disabled>
+
+        </div>
+
+        <div class="input-group">
+          <button type="button"
+                  class="btn @CreationCardModel.CARD_REMOVE_BTN btn-danger btn-remove">
+            Remove
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
