@@ -15,4 +15,8 @@
     <None Include="wwwroot\js\home.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="TaskScheduler" Version="2.11.0" />
+  </ItemGroup>
+
 </Project>

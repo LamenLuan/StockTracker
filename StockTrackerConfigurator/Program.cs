@@ -3,9 +3,12 @@ using System.Diagnostics;
 #endif
 
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Win32.TaskScheduler;
 using System.Globalization;
+using static System.Environment;
 
 const string URL = "http://localhost:5000";
+const string SERVICE_NAME = "StockTracker";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,5 +50,17 @@ Process.Start(new ProcessStartInfo
   UseShellExecute = true
 });
 #endif
+
+var exePath = $"{GetFolderPath(SpecialFolder.ProgramFiles)}\\{SERVICE_NAME}\\{SERVICE_NAME}.exe";
+
+if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
+{
+  var taskDefinition = TaskService.Instance.NewTask();
+  taskDefinition.RegistrationInfo.Description = $"{SERVICE_NAME} Initializer";
+  taskDefinition.Actions.Add(new ExecAction(exePath));
+  taskDefinition.Triggers.Add(new LogonTrigger { });
+
+  TaskService.Instance.RootFolder.RegisterTaskDefinition(SERVICE_NAME, taskDefinition);
+}
 
 app.Run();
