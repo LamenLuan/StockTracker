@@ -5,5 +5,6 @@
     <add key="Cooldown" value="00:15:00" />
     <add key="StartTime" value="09:30:00" />
     <add key="EndTime" value="17:00:00" />
+    <add key="NearPriceRangePctg" value="0.25" />
   </appSettings>
 </configuration>
