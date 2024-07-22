@@ -4,3 +4,11 @@ This project aims to assist Brazilian investors by notifying them when a target 
 The project contains two programs that run locally. [StockTracker](StockTracker) is a Windows application that runs in the background, tracking the prices of stocks defined by the user in the [StockTrackerConfigurator](StockTrackerConfigurator) web application.
 
 Currently, stock prices are retrieved using the free API [brapi](https://brapi.dev), and notifications are delivered via Windows toasts. The next steps are to add optional email notifications and create our own API to read stock prices.
+
+## Application Instructions
+
+1. Put the release file in your "Program Files" directory;
+
+1. Register an account on [brapi](https://brapi.dev) to generate your own API key, then put it on "./StockTrackerService/StockTrackerService.dll.config" file;
+
+1. Run "StockTracker.exe" for the first time to schedule the service task that will initialize service on user logon;

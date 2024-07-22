@@ -1,7 +1,3 @@
-#if !DEBUG
-using System.Diagnostics;
-#endif
-
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
