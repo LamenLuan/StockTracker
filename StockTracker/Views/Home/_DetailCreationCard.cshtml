@@ -5,7 +5,9 @@
 @model CreationCardModel;
 
 @{
-  var triggerPrice = Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
+  var triggerPrice = Model.CardInfo.Buying 
+    ? Model.CardInfo?.Price * (1 - (Model.CardInfo?.TriggerPercentage / 100))
+    : Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
 }
 
 <div class="col-2 stock-card detail-card">
