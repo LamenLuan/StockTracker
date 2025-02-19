@@ -12,3 +12,8 @@ Currently, stock prices are retrieved using the free API [brapi](https://brapi.d
 1. Register an account on [brapi](https://brapi.dev) to generate your own API key, then put it on "./StockTrackerService/StockTrackerService.dll.config" file;
 
 1. Run "StockTracker.exe" for the first time to schedule the service task that will initialize service on user logon;
+
+## Requirements
+
+* ASP.NET Core 6.0 is required to run the application.
+* The project targets .NET 6.0, which includes ASP.NET Core 6.0.
