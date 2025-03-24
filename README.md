@@ -6,7 +6,8 @@ The project contains two programs that run locally. [StockTrackerService](StockT
 Currently, stock prices are retrieved using the free API [brapi](https://brapi.dev), and notifications are delivered via Windows toasts. The next steps are to add optional email notifications and create our own API to read stock prices.
 
 ## Project Requirements
-1. .NET 6.0
+- .NET 6.0
+- Windows 10.0.17763.0 or newer
 
 ## How to install it
 
