@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
 using StockTracker;
@@ -13,16 +14,20 @@ internal class Program
   public static float PriceRange;
 
   private static List<StockTracking> StocksTracked = new();
-
+  private static AppDbContext _context = null!;
+  private static AppSettings settings = null!;
   private static readonly HttpClient _client = new();
   private static readonly List<StockTriggered> StocksTriggered = new();
   private static readonly List<StockTriggered> StocksNearTrigger = new();
-  private static readonly string? ApiKey = AppConfigKeys.BRAPI_KEY.GetValue();
 
-  private static void Main()
+  private static async Task Main()
   {
     if (IsMarketClosedDay()) return;
-    ReadSettings();
+
+    using var context = new AppDbContext();
+    _context = context;
+
+    settings = await _context.GetSettings();
     WaitUntilStartTime();
 
     while (true)
@@ -36,7 +41,7 @@ internal class Program
       for (int i = 0; i < StocksTracked.Count; i++)
       {
         var tracked = StocksTracked[i];
-        var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={ApiKey}";
+        var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={settings.ApiKey}";
         string? response;
 
         try
