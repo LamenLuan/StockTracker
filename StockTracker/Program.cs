@@ -1,3 +1,4 @@
+using Common.DbContexts;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>();
 
 builder.WebHost.UseUrls(URL);
 var app = builder.Build();

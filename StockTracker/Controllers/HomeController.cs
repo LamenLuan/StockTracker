@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
 using Microsoft.AspNetCore.Mvc;
@@ -7,9 +8,10 @@ using StockTrackerConfigurator.Models;
 
 namespace StockTrackerConfigurator.Controllers
 {
-  public class HomeController : Controller
+  public class HomeController(AppDbContext appDbContext) : Controller
   {
     private static readonly HttpClient _client = new();
+    private readonly AppDbContext _appDbContext = appDbContext;
 
     public IActionResult Index()
     {
@@ -22,28 +24,32 @@ namespace StockTrackerConfigurator.Controllers
       return View(model: model);
     }
 
-    public IActionResult GetBrapiKey()
+    public async Task<IActionResult> GetBrapiKey()
     {
-      var brapiKey = FileManager.ReadBrapiKey();
-      return GetBrapiKey(brapiKey);
+      var settings = await _appDbContext.GetSettings();
+      if (settings == null) return Error();
+
+      return GetBrapiKey(settings.ApiKey);
     }
 
-    public IActionResult CheckIfBrapiKeyValid(BrapiKeyDTO dto)
+    public async Task<IActionResult> WriteBrapiKeyAsync(BrapiKeyDTO dto)
     {
       var url = $"https://brapi.dev/api/quote/PETR4?token={dto.Key}";
       var resultado = _client.GetStringAsync(url).Result;
       if (resultado == null) return Error();
-      FileManager.WriteBrapiKey(dto.Key);
+
+      await _appDbContext.SaveApiKey(dto.Key);
       var returnDto = ReturnDTO.Success(dto.Key);
+
       return Json(returnDto);
     }
 
-    public IActionResult FindStocks(StockSearchDTO dto)
+    public async Task<IActionResult> FindStocksAsync(StockSearchDTO dto)
     {
-      var token = FileManager.ReadBrapiKey();
-      if (!token.HasContent()) return Error();
+      var settings = await _appDbContext.GetSettings();
+      if (!settings.ApiKey.HasContent()) return Error();
 
-      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={token}";
+      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={settings.ApiKey}";
       var resultado = _client.GetFromJsonAsync<StockListDTO>(url).Result;
       if (resultado == null) return Error();
 
@@ -88,7 +94,7 @@ namespace StockTrackerConfigurator.Controllers
 
     #region Private methods
 
-    private IActionResult GetBrapiKey(string brapiKey)
+    private IActionResult GetBrapiKey(string? brapiKey)
     {
       var response = brapiKey.HasContent()
         ? "Some hidden password"

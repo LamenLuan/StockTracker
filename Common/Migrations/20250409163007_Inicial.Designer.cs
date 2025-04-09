@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Common.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250407160225_Inicial")]
+    [Migration("20250409163007_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -31,6 +31,30 @@ namespace Common.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppSettings");
+                });
+
+            modelBuilder.Entity("Common.Types.StockTracking", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("RegularMarketPrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TrackingToBuy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("TriggerPercentage")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockTrackings");
                 });
 #pragma warning restore 612, 618
         }

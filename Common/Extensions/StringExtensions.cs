@@ -20,7 +20,7 @@ namespace Common.Extensions
       return JsonSerializer.Deserialize<T>(value, JsonOptions);
     }
 
-    public static bool HasContent(this string value)
+    public static bool HasContent(this string? value)
       => !string.IsNullOrEmpty(value);
   }
 }

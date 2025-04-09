@@ -29,6 +29,30 @@ namespace Common.Migrations
 
                     b.ToTable("AppSettings");
                 });
+
+            modelBuilder.Entity("Common.Types.StockTracking", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("RegularMarketPrice")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TrackingToBuy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("TriggerPercentage")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StockTrackings");
+                });
 #pragma warning restore 612, 618
         }
     }

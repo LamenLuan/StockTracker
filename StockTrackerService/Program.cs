@@ -15,7 +15,7 @@ internal class Program
 
   private static List<StockTracking> StocksTracked = new();
   private static AppDbContext _context = null!;
-  private static AppSettings settings = null!;
+  private static AppSettings _settings = null!;
   private static readonly HttpClient _client = new();
   private static readonly List<StockTriggered> StocksTriggered = new();
   private static readonly List<StockTriggered> StocksNearTrigger = new();
@@ -27,7 +27,12 @@ internal class Program
     using var context = new AppDbContext();
     _context = context;
 
-    settings = await _context.GetSettings();
+    if (!await ReadSettings())
+    {
+      Notifier.Notify("API Key not set, program closed");
+      return;
+    }
+
     WaitUntilStartTime();
 
     while (true)
@@ -41,7 +46,7 @@ internal class Program
       for (int i = 0; i < StocksTracked.Count; i++)
       {
         var tracked = StocksTracked[i];
-        var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={settings.ApiKey}";
+        var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={_settings.ApiKey}";
         string? response;
 
         try
@@ -76,11 +81,18 @@ internal class Program
     }
   }
 
-  private static void ReadSettings()
+  private static async Task<bool> ReadSettings()
   {
+    _settings = await _context.GetSettings();
+
     EndTime = AppConfigKeys.END_TIME.GetAsTimeSpan();
     PriceRange = AppConfigKeys.NEAR_PRICE_RANGE.GetAsFloat();
     Cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan();
+
+    if (string.IsNullOrEmpty(_settings.ApiKey))
+      return false;
+
+    return true;
   }
 
   private static bool ReadStockTrackings()
