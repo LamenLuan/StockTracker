@@ -1,5 +1,5 @@
 # Stock Tracker
-This project aims to assist Brazilian investors by notifying them when a target price, predefined by the user, for a stock in the brazilian market is reached or is close to being reached.
+This project aims to assist brazilian investors by notifying them when a target price, predefined by the user, for a stock in the brazilian market is reached or is close to being reached.
 
 The project contains two programs that run locally. [StockTrackerService](StockTrackerService) is a Windows application that runs in the background, tracking the prices of stocks defined by the user in the [StockTracker](StockTracker) web application.
 
