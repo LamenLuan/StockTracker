@@ -13,9 +13,9 @@ namespace StockTrackerConfigurator.Controllers
     private static readonly HttpClient _client = new();
     private readonly AppDbContext _appDbContext = appDbContext;
 
-    public IActionResult Index()
+    public async Task<IActionResult> IndexAsync()
     {
-      var stockTrackings = FileManager.ReadStockTrackings();
+      var stockTrackings = await _appDbContext.GetStockTrackingsAsync();
 
       var viewModelList = new List<CreationCardViewModel> { CreationCardViewModel.AddCardButton };
       viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
@@ -32,7 +32,7 @@ namespace StockTrackerConfigurator.Controllers
       return GetBrapiKey(settings.ApiKey);
     }
 
-    public async Task<IActionResult> WriteBrapiKeyAsync(BrapiKeyDTO dto)
+    public async Task<IActionResult> WriteBrapiKey(BrapiKeyDTO dto)
     {
       var url = $"https://brapi.dev/api/quote/PETR4?token={dto.Key}";
       var resultado = _client.GetStringAsync(url).Result;
@@ -44,7 +44,7 @@ namespace StockTrackerConfigurator.Controllers
       return Json(returnDto);
     }
 
-    public async Task<IActionResult> FindStocksAsync(StockSearchDTO dto)
+    public async Task<IActionResult> FindStocks(StockSearchDTO dto)
     {
       var settings = await _appDbContext.GetSettings();
       if (!settings.ApiKey.HasContent()) return Error();
@@ -62,7 +62,7 @@ namespace StockTrackerConfigurator.Controllers
       return PartialView("_FormCreationCard", model);
     }
 
-    public IActionResult CreateStockTrack(StockTrackDTO dto)
+    public async Task<IActionResult> CreateStockTrack(StockTrackDTO dto)
     {
       var stockTracking = new StockTracking
       {
@@ -74,7 +74,7 @@ namespace StockTrackerConfigurator.Controllers
 
       try
       {
-        FileManager.WriteNewStockTrack(stockTracking);
+        await _appDbContext.AddStockTracking(stockTracking);
         return Success();
       }
       catch (Exception)

@@ -42,6 +42,24 @@ namespace Common.DbContexts
       return settings;
     }
 
+    public async Task<List<StockTracking>> GetStockTrackingsAsync()
+    {
+      var stockTrackings = await StockTrackings.ToListAsync();
+      return stockTrackings;
+    }
+
+    public async Task AddStockTracking(StockTracking stockTracking)
+    {
+      StockTrackings.Add(stockTracking);
+      await SaveChangesAsync();
+    }
+
+    public async Task RemoveStockTracking(StockTracking stockTracking)
+    {
+      StockTrackings.Remove(stockTracking);
+      await SaveChangesAsync();
+    }
+
     public async Task SaveApiKey(string apiKey)
     {
       var settings = await GetSettings();
