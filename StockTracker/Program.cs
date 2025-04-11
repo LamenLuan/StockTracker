@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
 using System.Globalization;
-using static System.Environment;
 
 const string URL = "http://localhost:5000";
 const string SERVICE_NAME = "StockTrackerService";
@@ -21,8 +20,8 @@ var defaultCulture = CultureInfo.InvariantCulture;
 var localizationOptions = new RequestLocalizationOptions
 {
   DefaultRequestCulture = new RequestCulture(defaultCulture),
-  SupportedCultures = new List<CultureInfo> { defaultCulture },
-  SupportedUICultures = new List<CultureInfo> { defaultCulture },
+  SupportedCultures = [defaultCulture],
+  SupportedUICultures = [defaultCulture],
   ApplyCurrentCultureToResponseHeaders = true
 };
 app.UseRequestLocalization(localizationOptions);
@@ -52,7 +51,7 @@ Process.Start(new ProcessStartInfo
 
 if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
 {
-  var exePath = $"{GetFolderPath(SpecialFolder.ProgramFiles)}\\StockTracker\\{SERVICE_NAME}\\{SERVICE_NAME}.exe";
+  var exePath = $"{AppDomain.CurrentDomain.BaseDirectory}{SERVICE_NAME}.exe";
   var taskDefinition = TaskService.Instance.NewTask();
   taskDefinition.RegistrationInfo.Description = $"{SERVICE_NAME} Initializer";
   taskDefinition.Actions.Add(new ExecAction(exePath));
