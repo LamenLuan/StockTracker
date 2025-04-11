@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 App.config
 *.db
+/StockTracker/data.db-shm
+/StockTracker/data.db-wal

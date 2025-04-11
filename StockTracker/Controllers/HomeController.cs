@@ -1,5 +1,4 @@
-﻿using Common;
-using Common.DbContexts;
+﻿using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
 using Microsoft.AspNetCore.Mvc;
@@ -83,13 +82,12 @@ namespace StockTrackerConfigurator.Controllers
       }
     }
 
-    public IActionResult RemoveStockTrack(StockTrackDTO dto)
+    public async Task<IActionResult> RemoveStockTrack(StockTrackDTO dto)
     {
-      var stocks = FileManager.ReadStockTrackings();
-      var idx = stocks.FindIndex(s => s.Symbol.Equals(dto.StockName) && s.TrackingToBuy == dto.Buying);
-      if (idx < 0) return Error();
-      stocks.RemoveAt(idx);
-      return FileManager.WriteStockTrackings(stocks) ? Success() : Error();
+      var stock = await _appDbContext.GetStockTrackingAsync(dto.Id);
+      if (stock == null) return Error();
+      await _appDbContext.RemoveStockTracking(stock);
+      return Success();
     }
 
     #region Private methods

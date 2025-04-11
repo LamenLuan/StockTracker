@@ -50,10 +50,9 @@ Process.Start(new ProcessStartInfo
 });
 #endif
 
-var exePath = $"{GetFolderPath(SpecialFolder.ProgramFiles)}\\StockTracker\\{SERVICE_NAME}\\{SERVICE_NAME}.exe";
-
 if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
 {
+  var exePath = $"{GetFolderPath(SpecialFolder.ProgramFiles)}\\StockTracker\\{SERVICE_NAME}\\{SERVICE_NAME}.exe";
   var taskDefinition = TaskService.Instance.NewTask();
   taskDefinition.RegistrationInfo.Description = $"{SERVICE_NAME} Initializer";
   taskDefinition.Actions.Add(new ExecAction(exePath));

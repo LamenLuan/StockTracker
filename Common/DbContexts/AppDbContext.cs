@@ -42,6 +42,12 @@ namespace Common.DbContexts
       return settings;
     }
 
+    public async Task<StockTracking?> GetStockTrackingAsync(long id)
+    {
+      var stockTrackings = await StockTrackings.FindAsync(id);
+      return stockTrackings;
+    }
+
     public async Task<List<StockTracking>> GetStockTrackingsAsync()
     {
       var stockTrackings = await StockTrackings.ToListAsync();

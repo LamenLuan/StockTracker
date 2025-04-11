@@ -1,5 +1,4 @@
-﻿using Common;
-using Common.DbContexts;
+﻿using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
 using StockTracker;
@@ -41,7 +40,7 @@ internal class Program
 
       var connectionTries = 0;
       var apiCommunicated = true;
-      ReadStockTrackings();
+      await ReadStockTrackingsAsync();
 
       for (int i = 0; i < StocksTracked.Count; i++)
       {
@@ -95,10 +94,10 @@ internal class Program
     return true;
   }
 
-  private static bool ReadStockTrackings()
+  private static async Task<bool> ReadStockTrackingsAsync()
   {
-    StocksTracked = FileManager.ReadStockTrackings();
-    return StocksTracked.Any();
+    StocksTracked = await _context.GetStockTrackingsAsync();
+    return StocksTracked.Count != 0;
   }
 
   private static bool StockTriggered(
