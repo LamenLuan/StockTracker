@@ -3,9 +3,15 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
 using System.Globalization;
+using static Common.Constants;
 
-const string URL = "http://localhost:5000";
-const string SERVICE_NAME = "StockTrackerService";
+
+var mutex = new Mutex(true, APP_MUTEX, out var createdNew);
+if (!createdNew)
+{
+  Console.WriteLine("Program already running");
+  return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>();
 
-builder.WebHost.UseUrls(URL);
+builder.WebHost.UseUrls(APP_URL);
 var app = builder.Build();
 
 var defaultCulture = CultureInfo.InvariantCulture;
@@ -44,7 +50,7 @@ app.MapControllerRoute(
 #if !DEBUG
 Process.Start(new ProcessStartInfo
 {
-  FileName = URL,
+  FileName = APP_URL,
   UseShellExecute = true
 });
 #endif
@@ -62,3 +68,5 @@ if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
 }
 
 app.Run();
+
+mutex.ReleaseMutex();

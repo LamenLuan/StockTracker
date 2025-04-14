@@ -1,10 +1,13 @@
 ﻿using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
+using Microsoft.Toolkit.Uwp.Notifications;
 using StockTracker;
 using StockTracker.Extensions;
 using StockTracker.Types;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
+using static Common.Constants;
 
 internal class Program
 {
@@ -23,20 +26,24 @@ internal class Program
   {
     if (IsMarketClosedDay()) return;
 
+    ReadAppSettings();
+    AddToastClickEvent();
     using var context = new AppDbContext();
     _context = context;
-
-    if (!await ReadSettings())
-    {
-      Notifier.Notify("API Key not set, program closed");
-      return;
-    }
 
     WaitUntilStartTime();
 
     while (true)
     {
       if (DateTime.Now.TimeOfDay >= EndTime) break;
+
+      await ReadDbSettings();
+      if (string.IsNullOrEmpty(_settings.ApiKey))
+      {
+        Notifier.Notify("API Key not set", openApp: true);
+        Thread.Sleep(Cooldown);
+        continue;
+      }
 
       var connectionTries = 0;
       var apiCommunicated = true;
@@ -80,18 +87,21 @@ internal class Program
     }
   }
 
-  private static async Task<bool> ReadSettings()
+  private static async Task<bool> ReadDbSettings()
   {
     _settings = await _context.GetSettings();
-
-    EndTime = AppConfigKeys.END_TIME.GetAsTimeSpan();
-    PriceRange = AppConfigKeys.NEAR_PRICE_RANGE.GetAsFloat();
-    Cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan();
 
     if (string.IsNullOrEmpty(_settings.ApiKey))
       return false;
 
     return true;
+  }
+
+  private static void ReadAppSettings()
+  {
+    EndTime = AppConfigKeys.END_TIME.GetAsTimeSpan();
+    PriceRange = AppConfigKeys.NEAR_PRICE_RANGE.GetAsFloat();
+    Cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan();
   }
 
   private static async Task<bool> ReadStockTrackingsAsync()
@@ -205,5 +215,33 @@ internal class Program
 
     if (StocksNearTrigger.Any())
       Notifier.NotifyStocks(StocksNearTrigger, "Stocks near triggering!");
+  }
+
+  private static void OpenFrontApp()
+  {
+    if (Mutex.TryOpenExisting(APP_MUTEX, out _))
+    {
+      Process.Start(new ProcessStartInfo
+      {
+        FileName = APP_URL,
+        UseShellExecute = true
+      });
+
+      return;
+    }
+
+    var exePath = $"{AppDomain.CurrentDomain.BaseDirectory}{APP_NAME}.exe";
+    Process.Start(new ProcessStartInfo { FileName = exePath });
+  }
+
+  private static void AddToastClickEvent()
+  {
+    ToastNotificationManagerCompat.OnActivated += toastArgs =>
+    {
+      var args = ToastArguments.Parse(toastArgs.Argument);
+      var openAppArg = args.Where(a => a.Key == "OpenApp").SingleOrDefault();
+      if (bool.TryParse(openAppArg.Value, out var openApp) && openApp)
+        OpenFrontApp();
+    };
   }
 }

@@ -13,10 +13,11 @@ namespace StockTracker
       stocksTrigger.Clear();
     }
 
-    public static void Notify(string message, string? title = null)
+    public static void Notify(string message, string? title = null, bool openApp = false)
     {
       var toast = new ToastContentBuilder();
       if (title != null) toast.AddText(title);
+      toast.AddArgument("OpenApp", openApp);
       toast.AddText(message);
       toast.Show();
     }
