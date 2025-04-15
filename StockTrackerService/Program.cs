@@ -40,7 +40,7 @@ internal class Program
       await ReadDbSettings();
       if (string.IsNullOrEmpty(_settings.ApiKey))
       {
-        Notifier.Notify("API Key not set", openApp: true);
+        Notifier.Notify("API Key not set", buttonConfig: ("Configure Key", "OpenApp"));
         Thread.Sleep(Cooldown);
         continue;
       }
@@ -210,15 +210,18 @@ internal class Program
 
   private static void NotifyTriggers()
   {
-    if (StocksTriggered.Any())
+    if (StocksTriggered.Count != 0)
       Notifier.NotifyStocks(StocksTriggered, "Tracker Triggered!");
 
-    if (StocksNearTrigger.Any())
+    if (StocksNearTrigger.Count != 0)
       Notifier.NotifyStocks(StocksNearTrigger, "Stocks near triggering!");
   }
 
   private static void OpenFrontApp()
   {
+#if DEBUG
+    return;
+#endif
     if (Mutex.TryOpenExisting(APP_MUTEX, out _))
     {
       Process.Start(new ProcessStartInfo
@@ -240,7 +243,7 @@ internal class Program
     {
       var args = ToastArguments.Parse(toastArgs.Argument);
       var openAppArg = args.Where(a => a.Key == "OpenApp").SingleOrDefault();
-      if (bool.TryParse(openAppArg.Value, out var openApp) && openApp)
+      if (openAppArg.Key != null)
         OpenFrontApp();
     };
   }
