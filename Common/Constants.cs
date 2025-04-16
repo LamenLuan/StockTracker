@@ -6,5 +6,6 @@
     public const string SERVICE_NAME = "StockTrackerService";
     public const string APP_NAME = "StockTracker";
     public const string APP_MUTEX = "StockTrackerByLemers";
+    public const string SERVICE_MUTEX = "StockTrackerServiceByLemers";
   }
 }

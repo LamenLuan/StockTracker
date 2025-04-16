@@ -62,6 +62,7 @@ if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
   taskDefinition.RegistrationInfo.Description = $"{SERVICE_NAME} Initializer";
   taskDefinition.Actions.Add(new ExecAction(exePath));
   taskDefinition.Triggers.Add(new LogonTrigger());
+  taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
 
   TaskService.Instance.RootFolder.RegisterTaskDefinition(SERVICE_NAME, taskDefinition);
   Process.Start(new ProcessStartInfo { FileName = exePath });
