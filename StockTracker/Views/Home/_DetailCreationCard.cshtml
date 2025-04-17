@@ -32,6 +32,10 @@
                name="@nameof(StockTrackDTO.Buying)"
                value="@Model.CardInfo?.Buying.ToString().ToLower()" />
 
+        <input type="hidden"
+               name="@nameof(StockTrackDTO.Id)"
+               value="@Model.CardInfo?.Id" />
+
         <div class="input-group mb-3">
           <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")" disabled>
             @(Model.CardInfo.Buying ? "Buying" : "Selling")

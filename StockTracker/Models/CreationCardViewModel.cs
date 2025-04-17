@@ -21,6 +21,7 @@ namespace StockTrackerConfigurator.Models
     {
       CardInfo = new StockTrackDTO
       {
+        Id = stock.Id,
         Buying = stock.TrackingToBuy,
         Price = stock.RegularMarketPrice,
         StockName = stock.Symbol,

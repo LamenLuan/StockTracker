@@ -1,26 +1,33 @@
+using Common.DbContexts;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
 using System.Globalization;
-using static System.Environment;
+using static Common.Constants;
 
-const string URL = "http://localhost:5000";
-const string SERVICE_NAME = "StockTrackerService";
+
+var mutex = new Mutex(true, APP_MUTEX, out var createdNew);
+if (!createdNew)
+{
+  Console.WriteLine("Program already running");
+  return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>();
 
-builder.WebHost.UseUrls(URL);
+builder.WebHost.UseUrls(APP_URL);
 var app = builder.Build();
 
 var defaultCulture = CultureInfo.InvariantCulture;
 var localizationOptions = new RequestLocalizationOptions
 {
   DefaultRequestCulture = new RequestCulture(defaultCulture),
-  SupportedCultures = new List<CultureInfo> { defaultCulture },
-  SupportedUICultures = new List<CultureInfo> { defaultCulture },
+  SupportedCultures = [defaultCulture],
+  SupportedUICultures = [defaultCulture],
   ApplyCurrentCultureToResponseHeaders = true
 };
 app.UseRequestLocalization(localizationOptions);
@@ -43,22 +50,24 @@ app.MapControllerRoute(
 #if !DEBUG
 Process.Start(new ProcessStartInfo
 {
-  FileName = URL,
+  FileName = APP_URL,
   UseShellExecute = true
 });
 #endif
 
-var exePath = $"{GetFolderPath(SpecialFolder.ProgramFiles)}\\StockTracker\\{SERVICE_NAME}\\{SERVICE_NAME}.exe";
-
 if (TaskService.Instance.GetTask(SERVICE_NAME) == null)
 {
+  var exePath = $"{AppDomain.CurrentDomain.BaseDirectory}{SERVICE_NAME}.exe";
   var taskDefinition = TaskService.Instance.NewTask();
   taskDefinition.RegistrationInfo.Description = $"{SERVICE_NAME} Initializer";
   taskDefinition.Actions.Add(new ExecAction(exePath));
   taskDefinition.Triggers.Add(new LogonTrigger());
+  taskDefinition.Principal.RunLevel = TaskRunLevel.Highest;
 
   TaskService.Instance.RootFolder.RegisterTaskDefinition(SERVICE_NAME, taskDefinition);
   Process.Start(new ProcessStartInfo { FileName = exePath });
 }
 
 app.Run();
+
+mutex.ReleaseMutex();
