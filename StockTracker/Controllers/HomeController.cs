@@ -2,6 +2,7 @@
 using Common.Extensions;
 using Common.Types;
 using Microsoft.AspNetCore.Mvc;
+using StockTracker.DTOs;
 using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Models;
 
@@ -48,11 +49,19 @@ namespace StockTrackerConfigurator.Controllers
       var settings = await _appDbContext.GetSettings();
       if (!settings.ApiKey.HasContent()) return Error();
 
-      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={settings.ApiKey}";
-      var resultado = _client.GetFromJsonAsync<StockListDTO>(url).Result;
-      if (resultado == null) return Error();
+      var stocks = SearchStocks(dto, settings);
+      if (stocks == null) return Error();
 
-      return Json(resultado);
+      var coins = SearchCryptos(dto, settings);
+      if (coins == null) return Error();
+
+      var returnDto = new StockSearchReturnDTO
+      {
+        Stocks = stocks,
+        Coins = coins
+      };
+
+      return Json(returnDto);
     }
 
     public IActionResult CreateCardView()
@@ -91,6 +100,36 @@ namespace StockTrackerConfigurator.Controllers
     }
 
     #region Private methods
+
+    private static MarketGroupDTO? SearchStocks(StockSearchDTO dto, AppSettings settings)
+    {
+      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={settings.ApiKey}";
+      var stocks = _client.GetFromJsonAsync<StockListDTO>(url).Result;
+      if (stocks == null) return null;
+
+      var marketGroup = new MarketGroupDTO
+      {
+        Type = TrackingType.STOCK,
+        Items = stocks.Stocks
+      };
+
+      return marketGroup;
+    }
+
+    private static MarketGroupDTO? SearchCryptos(StockSearchDTO dto, AppSettings settings)
+    {
+      var url = $"https://brapi.dev/api/v2/crypto/available?search={dto.SearchTerm}&token={settings.ApiKey}";
+      var stocks = _client.GetFromJsonAsync<CryptoListDTO>(url).Result;
+      if (stocks == null) return null;
+
+      var marketGroup = new MarketGroupDTO
+      {
+        Type = TrackingType.CRYPTO,
+        Items = stocks.Coins
+      };
+
+      return marketGroup;
+    }
 
     private IActionResult GetBrapiKey(string? brapiKey)
     {

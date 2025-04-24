@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Common.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250409163007_Inicial")]
+    [Migration("20250423155820_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -51,6 +51,9 @@ namespace Common.Migrations
 
                     b.Property<float>("TriggerPercentage")
                         .HasColumnType("REAL");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

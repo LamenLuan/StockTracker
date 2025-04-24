@@ -49,6 +49,9 @@ namespace Common.Migrations
                     b.Property<float>("TriggerPercentage")
                         .HasColumnType("REAL");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("StockTrackings");

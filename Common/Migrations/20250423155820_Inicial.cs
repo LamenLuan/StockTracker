@@ -31,6 +31,7 @@ namespace Common.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     TriggerPercentage = table.Column<float>(type: "REAL", nullable: false),
                     TrackingToBuy = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
                     Symbol = table.Column<string>(type: "TEXT", nullable: false),
                     RegularMarketPrice = table.Column<float>(type: "REAL", nullable: false)
                 },

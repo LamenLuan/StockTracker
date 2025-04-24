@@ -117,11 +117,25 @@ function configCardSelect(card) {
 			},
 			processResults: response => {
 				return {
-					results: response.stocks.map(text => ({ id: text, text }))
+					results: [
+						{
+							text: "Stocks",
+							children: createMarketGroupOptions(response.stocks)
+						},
+						{
+							text: "Crypto",
+							children: createMarketGroupOptions(response.coins)
+						}
+					]
 				}
 			}
 		}
 	})
+}
+
+function createMarketGroupOptions(marketGroup) {
+	return marketGroup.items
+		.map(text => ({ id: `${marketGroup.type}_${text}`, text }))
 }
 
 function stockNameSelectEvent() {

@@ -5,5 +5,6 @@
     public long Id { get; set; }
     public float TriggerPercentage { get; set; }
     public bool TrackingToBuy { get; set; }
+    public TrackingType Type { get; set; }
   }
 }

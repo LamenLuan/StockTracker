@@ -1,12 +1,15 @@
-﻿namespace StockTrackerConfigurator.DTOs
+﻿using Common.Types;
+
+namespace StockTrackerConfigurator.DTOs
 {
   public class StockListDTO
   {
+    public TrackingType Type { get; set; }
     public string[] Stocks { get; set; }
 
     public StockListDTO()
     {
-      Stocks = new string[0];
+      Stocks = [];
     }
   }
 }
