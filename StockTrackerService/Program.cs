@@ -54,7 +54,7 @@ internal class Program
     for (int i = 0; i < StocksTracked.Count; i++)
     {
       var tracked = StocksTracked[i];
-      var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={_settings.ApiKey}";
+      var url = GetSearchUrl(tracked);
       string? response;
 
       try
@@ -83,6 +83,15 @@ internal class Program
       if (stockResults == null) continue;
       if (StockTriggered(stockResults, tracked)) i--;
     }
+  }
+
+  private static string GetSearchUrl(StockTracking stockTracking)
+  {
+    return stockTracking.Type switch
+    {
+      TrackingType.CRYPTO => $"https://brapi.dev/api/v2/crypto?coin={stockTracking.Symbol}&token={_settings.ApiKey}",
+      _ => $"https://brapi.dev/api/quote/{stockTracking.Symbol}?token={_settings.ApiKey}",
+    };
   }
 
   private static bool StockTriggered(

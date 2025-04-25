@@ -72,12 +72,18 @@ namespace StockTrackerConfigurator.Controllers
 
     public async Task<IActionResult> CreateStockTrack(StockTrackDTO dto)
     {
+      var stockInfos = dto.StockName.Split('_');
+
+      if (stockInfos.Length != 2 || !Enum.TryParse<TrackingType>(stockInfos[0], out var type))
+        return Error();
+
       var stockTracking = new StockTracking
       {
         RegularMarketPrice = dto.Price,
         TrackingToBuy = dto.Buying,
         TriggerPercentage = dto.TriggerPercentage,
-        Symbol = dto.StockName
+        Symbol = stockInfos[1],
+        Type = type
       };
 
       try
