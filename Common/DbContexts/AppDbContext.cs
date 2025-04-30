@@ -25,7 +25,8 @@ namespace Common.DbContexts
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-      optionsBuilder.UseSqlite("Data Source=data.db");
+      var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data.db");
+      optionsBuilder.UseSqlite($"Data Source={dbPath}");
     }
 
     public async Task<AppSettings> GetSettings()
