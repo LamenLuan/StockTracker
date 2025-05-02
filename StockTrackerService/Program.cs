@@ -1,6 +1,7 @@
 ﻿using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
+using HtmlAgilityPack;
 using Microsoft.Toolkit.Uwp.Notifications;
 using StockTracker;
 using StockTracker.Extensions;
@@ -24,6 +25,8 @@ internal class Program
 
   private static async Task Main()
   {
+    TestScrapping();
+
     if (IsProgramRunningAlready() || IsMarketClosedDay()) return;
 
     LoadAppResources();
@@ -40,6 +43,28 @@ internal class Program
 
       NotifyTriggers();
       Thread.Sleep(Cooldown);
+    }
+  }
+
+  private static void TestScrapping()
+  {
+    const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36";
+    var htmlWeb = new HtmlWeb { UseCookies = true, UserAgent = UserAgent, CaptureRedirect = true };
+    var url = new Uri("https://finance.yahoo.com/quotes/PETR4.SA,ITUB4.SA,BTC/");
+    var result = htmlWeb.Load(url);
+    var table = result.DocumentNode.SelectSingleNode("//table[contains(@class, \"markets-table\")]");
+    var rows = table?.SelectNodes(".//tbody/tr");
+    if (rows == null || rows.Count == 0) return;
+    foreach (var row in rows)
+    {
+      var priceNode = row.SelectSingleNode(".//td[2]/span/div/fin-streamer");
+      if (priceNode == null) continue;
+      var price = priceNode.GetDataAttribute("value")?.Value;
+      if (price == null) continue;
+      var symbol = priceNode.GetDataAttribute("symbol")?.Value;
+      if (symbol == null) continue;
+      var currency = row.SelectSingleNode(".//td[6]/span")?.InnerText;
+      if (currency == null) continue;
     }
   }
 
