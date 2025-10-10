@@ -5,6 +5,7 @@ using Microsoft.Toolkit.Uwp.Notifications;
 using StockTracker;
 using StockTracker.Extensions;
 using StockTracker.Types;
+using StockTrackerService;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using static Common.Constants;
@@ -24,21 +25,21 @@ internal class Program
 
   private static async Task Main()
   {
-    if (IsProgramRunningAlready() || IsMarketClosedDay()) return;
+    if (CantRunTracker()) return;
 
     LoadAppResources();
     WaitUntilStartTime();
 
     while (true)
     {
-      if (DateTime.Now.TimeOfDay >= EndTime) break;
+      if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= EndTime) break;
 
       await ReadDbSettings();
       if (IsApiKeyNotSet()) continue;
 
       await AnalyseTrackings();
 
-      NotifyTriggers();
+      await NotifyTriggersAsync();
       Thread.Sleep(Cooldown);
     }
   }
@@ -54,12 +55,13 @@ internal class Program
     for (int i = 0; i < StocksTracked.Count; i++)
     {
       var tracked = StocksTracked[i];
+
       var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={_settings.ApiKey}";
       string? response;
 
       try
       {
-        response = _client.GetStringAsync(url).Result;
+        response = await _client.GetStringAsync(url);
       }
       catch (Exception)
       {
@@ -95,7 +97,7 @@ internal class Program
 
     if (PriceTriggered(tracked, incomePercentage))
     {
-      var stockTriggered = new StockTriggered(tracked, incomePercentage);
+      var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksTriggered.Add(stockTriggered);
       StocksTracked.Remove(tracked);
 
@@ -104,7 +106,7 @@ internal class Program
 
     if (PriceNearTrigger(tracked, priceNow))
     {
-      var stockTriggered = new StockTriggered(tracked, incomePercentage);
+      var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksNearTrigger.Add(stockTriggered);
     }
 
@@ -124,7 +126,7 @@ internal class Program
     var desiredPrice = tracked.RegularMarketPrice * desiredPricePctg;
     var rangeValue = desiredPrice * PriceRange / 100;
 
-    return priceNow >= desiredPrice - rangeValue && priceNow <= desiredPrice + rangeValue;
+    return (priceNow >= desiredPrice - rangeValue) && (priceNow <= desiredPrice + rangeValue);
   }
 
   private static bool PriceTriggered(StockTracking tracked, float percentage)
@@ -140,6 +142,12 @@ internal class Program
   => !tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
 
   #endregion
+
+  private static bool CantRunTracker()
+  {
+    return !Debugger.IsAttached &&
+      (IsProgramRunningAlready() || IsMarketClosedDay());
+  }
 
   private static bool IsApiKeyNotSet()
   {
@@ -226,6 +234,8 @@ internal class Program
 
   private static void WaitUntilStartTime()
   {
+    if (Debugger.IsAttached) return;
+
     var startTime = AppConfigKeys.START_TIME.GetAsTimeSpan();
     var timeNow = DateTime.Now.TimeOfDay;
 
@@ -239,13 +249,15 @@ internal class Program
     Notifier.Notify("Tracker started");
   }
 
-  private static void NotifyTriggers()
+  private static async Task NotifyTriggersAsync()
   {
-    if (StocksTriggered.Count != 0)
-      Notifier.NotifyStocks(StocksTriggered, "Tracker Triggered!");
+    var allTriggers = StocksTriggered.Concat(StocksNearTrigger).ToList();
+    if (allTriggers.Count == 0) return;
 
-    if (StocksNearTrigger.Count != 0)
-      Notifier.NotifyStocks(StocksNearTrigger, "Stocks near triggering!");
+    Notifier.NotifyStocks(StocksTriggered, StocksNearTrigger);
+    await WhatsappNotifier.NotifyStocks(allTriggers);
+    StocksTriggered.Clear();
+    StocksNearTrigger.Clear();
   }
 
   private static void AddToastClickEvent()

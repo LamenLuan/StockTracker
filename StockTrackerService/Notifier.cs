@@ -5,12 +5,12 @@ namespace StockTracker
 {
   public static class Notifier
   {
-    public static void NotifyStocks(List<StockTriggered> stocksTrigger, string message)
+    public static void NotifyStocks(
+      List<StockTriggered> stocksTriggered,
+      List<StockTriggered> stocksNearTriggering)
     {
-      var triggersMessages = stocksTrigger.Select(s => s.ToString());
-      var finalMessage = string.Join("\n", triggersMessages);
-      Notify(finalMessage, message, buttonConfig: ("See stock trackings", "OpenApp"));
-      stocksTrigger.Clear();
+      NotifyStocks(stocksTriggered, "Tracker Triggered!");
+      NotifyStocks(stocksNearTriggering, "Stocks near triggering!");
     }
 
     public static void Notify(
@@ -36,6 +36,13 @@ namespace StockTracker
 
       toast.AddText(message);
       toast.Show();
+    }
+
+    private static void NotifyStocks(List<StockTriggered> stocksTriggered, string message)
+    {
+      var triggersMessages = stocksTriggered.Select(s => s.ToString());
+      var finalMessage = string.Join("\n", triggersMessages);
+      Notify(finalMessage, message, buttonConfig: ("See stock trackings", "OpenApp"));
     }
   }
 }

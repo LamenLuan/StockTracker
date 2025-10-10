@@ -6,6 +6,8 @@
     COOLDOWN,
     START_TIME,
     END_TIME,
-    NEAR_PRICE_RANGE
+    NEAR_PRICE_RANGE,
+    TOKEN,
+    USER_ID
   }
 }
