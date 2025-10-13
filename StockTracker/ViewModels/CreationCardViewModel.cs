@@ -2,7 +2,7 @@
 using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Types;
 
-namespace StockTrackerConfigurator.Models
+namespace StockTracker.ViewModels
 {
   public class CreationCardViewModel
   {

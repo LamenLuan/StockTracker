@@ -1,9 +1,8 @@
-namespace StockTrackerConfigurator.Models
+namespace StockTracker.ViewModels
 {
   public class ErrorViewModel
   {
     public string? RequestId { get; set; }
-
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
   }
 }

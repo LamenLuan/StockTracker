@@ -1,4 +1,5 @@
-﻿using StockTrackerConfigurator.DTOs;
+﻿using StockTracker.ViewModels;
+using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Types;
 
 namespace StockTrackerConfigurator.Models

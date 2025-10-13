@@ -1,4 +1,7 @@
-﻿namespace StockTrackerConfigurator.Models
+﻿using StockTracker.ViewModels;
+using StockTrackerConfigurator.Models;
+
+namespace StockTracker.Models
 {
   public class HomeModel
   {

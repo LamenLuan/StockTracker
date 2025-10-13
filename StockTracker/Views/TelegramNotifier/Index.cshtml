@@ -1,0 +1,43 @@
+﻿@using StockTracker.DTOs
+@using StockTracker.Models
+@using static StockTracker.Models.TelegramNotifierModel;
+
+@model TelegramNotifierModel
+
+@{
+  ViewData["Title"] = "Telegram Notifier";
+  TelegramNotifierDTO dto;
+}
+
+
+<form id="@FORM_ID" class="needs-validation" novalidate>
+
+  <div class="form-group col-md-3 mb-3">
+    <label for="@nameof(dto.Token)" class="form-label">Bot Token</label>
+
+    <input name="@nameof(dto.Token)"
+            type="password"
+            class="form-control"
+            id="@nameof(dto.Token)"
+            value="@Model.Token"
+            required />
+
+    <div class="invalid-feedback"></div>
+  </div>
+
+  <div class="form-group col-md-3 mb-4">
+    <label for="@nameof(dto.Id)" class="form-label">Telegram ID</label>
+
+    <input name="@nameof(dto.Id)"
+            type="password"
+            class="form-control"
+            id="@nameof(dto.Id)"
+            value="@Model.Id"
+            required />
+
+    <div class="invalid-feedback"></div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+
+</form>

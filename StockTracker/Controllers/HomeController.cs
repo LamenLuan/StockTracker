@@ -2,10 +2,12 @@
 using Common.Extensions;
 using Common.Types;
 using Microsoft.AspNetCore.Mvc;
+using StockTracker.Models;
+using StockTracker.ViewModels;
 using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Models;
 
-namespace StockTrackerConfigurator.Controllers
+namespace StockTracker.Controllers
 {
   public class HomeController(AppDbContext appDbContext) : Controller
   {
@@ -16,11 +18,15 @@ namespace StockTrackerConfigurator.Controllers
     {
       var stockTrackings = await _appDbContext.GetStockTrackingsAsync();
 
-      var viewModelList = new List<CreationCardViewModel> { CreationCardViewModel.AddCardButton };
+      var viewModelList = new List<CreationCardViewModel>
+      {
+        CreationCardViewModel.AddCardButton
+      };
+
       viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
 
       var model = new HomeModel(viewModelList);
-      return View(model: model);
+      return View(model);
     }
 
     public async Task<IActionResult> GetBrapiKey()
