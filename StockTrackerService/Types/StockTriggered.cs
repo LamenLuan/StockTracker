@@ -1,6 +1,6 @@
 ﻿using Common.Types;
 
-namespace StockTracker.Types
+namespace StockTrackerService.Types
 {
   public class StockTriggered
   {
@@ -22,7 +22,7 @@ namespace StockTracker.Types
       Symbol = stock.Symbol;
       CurrentPrice = currentPrice;
       TriggeredToBuy = stock.TrackingToBuy;
-      Price = stock.RegularMarketPrice;
+      Price = stock.PriceTrigger;
     }
   }
 }

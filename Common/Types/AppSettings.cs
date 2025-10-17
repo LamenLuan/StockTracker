@@ -6,5 +6,10 @@
     public string? ApiKey { get; set; }
     public string? TelegramBotToken { get; set; }
     public long? TelegramId { get; set; }
+
+    public bool HasTelegramConfig()
+    {
+      return !string.IsNullOrEmpty(TelegramBotToken) && TelegramId.HasValue;
+    }
   }
 }

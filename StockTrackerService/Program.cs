@@ -2,10 +2,9 @@
 using Common.Extensions;
 using Common.Types;
 using Microsoft.Toolkit.Uwp.Notifications;
-using StockTracker;
-using StockTracker.Extensions;
-using StockTracker.Types;
 using StockTrackerService;
+using StockTrackerService.Extensions;
+using StockTrackerService.Types;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using static Common.Constants;
@@ -18,6 +17,7 @@ internal class Program
 
   private static List<StockTracking> StocksTracked = [];
   private static AppDbContext _context = null!;
+  private static TelegramNotifier _telegramNotifier = null!;
   private static AppSettings _settings = null!;
   private static readonly HttpClient _client = new();
   private static readonly List<StockTriggered> StocksTriggered = [];
@@ -27,7 +27,7 @@ internal class Program
   {
     if (CantRunTracker()) return;
 
-    LoadAppResources();
+    await LoadAppResources();
     WaitUntilStartTime();
 
     while (true)
@@ -93,9 +93,8 @@ internal class Program
   )
   {
     var priceNow = stocksResults.Results.First().RegularMarketPrice;
-    var incomePercentage = ((priceNow / tracked.RegularMarketPrice) - 1) * 100;
 
-    if (PriceTriggered(tracked, incomePercentage))
+    if (PriceTriggered(tracked, priceNow))
     {
       var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksTriggered.Add(stockTriggered);
@@ -104,7 +103,7 @@ internal class Program
       return true;
     }
 
-    if (PriceNearTrigger(tracked, priceNow))
+    if (PriceTriggered(tracked, priceNow, PriceRange))
     {
       var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksNearTrigger.Add(stockTriggered);
@@ -119,27 +118,18 @@ internal class Program
     return day == DayOfWeek.Sunday || day == DayOfWeek.Saturday;
   }
 
-  private static bool PriceNearTrigger(StockTracking tracked, float priceNow)
+  private static bool PriceTriggered(
+    StockTracking tracked,
+    float priceNow,
+    float priceRange = 0f)
   {
-    var triggerPctg = tracked.TriggerPercentage / 100;
-    var desiredPricePctg = 1 + (tracked.TrackingToBuy ? -triggerPctg : triggerPctg);
-    var desiredPrice = tracked.RegularMarketPrice * desiredPricePctg;
-    var rangeValue = desiredPrice * PriceRange / 100;
+    var desiredPrice = tracked.PriceTrigger;
+    var rangeValue = desiredPrice * priceRange / 100f;
 
-    return (priceNow >= desiredPrice - rangeValue) && (priceNow <= desiredPrice + rangeValue);
+    return tracked.TrackingToBuy
+      ? priceNow <= desiredPrice + rangeValue
+      : priceNow >= desiredPrice - rangeValue;
   }
-
-  private static bool PriceTriggered(StockTracking tracked, float percentage)
-  {
-    return TriggeredToBuy(tracked, -percentage)
-      || TriggeredToSell(tracked, percentage);
-  }
-
-  private static bool TriggeredToBuy(StockTracking tracked, float percentage)
-    => tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
-
-  private static bool TriggeredToSell(StockTracking tracked, float percentage)
-  => !tracked.TrackingToBuy && percentage >= tracked.TriggerPercentage;
 
   #endregion
 
@@ -161,11 +151,14 @@ internal class Program
     return false;
   }
 
-  private static void LoadAppResources()
+  private static async Task LoadAppResources()
   {
     ReadAppSettings();
     AddToastClickEvent();
     _context = new AppDbContext();
+    await ReadDbSettings();
+    if (_settings.HasTelegramConfig())
+      _telegramNotifier = new TelegramNotifier(_settings.TelegramBotToken!, _settings.TelegramId!.Value);
   }
 
   private static bool IsProgramRunningAlready()
@@ -255,7 +248,10 @@ internal class Program
     if (allTriggers.Count == 0) return;
 
     Notifier.NotifyStocks(StocksTriggered, StocksNearTrigger);
-    await WhatsappNotifier.NotifyStocks(allTriggers);
+
+    if (_telegramNotifier != null)
+      await _telegramNotifier.NotifyStocks(allTriggers);
+
     StocksTriggered.Clear();
     StocksNearTrigger.Clear();
   }

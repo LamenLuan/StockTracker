@@ -9,7 +9,6 @@
   TelegramNotifierDTO dto;
 }
 
-
 <form id="@FORM_ID" class="needs-validation" novalidate>
 
   <div class="form-group col-md-3 mb-3">
@@ -19,25 +18,27 @@
             type="password"
             class="form-control"
             id="@nameof(dto.Token)"
-            value="@Model.Token"
+            value="@(Model.HasToken ? "some random token" : string.Empty)"
             required />
 
     <div class="invalid-feedback"></div>
+
+    <small id="@HELP_TEXT_ID"
+      class="form-text text-muted blink d-none">
+      Please send a message from your telegram to the bot now
+    </small>
   </div>
 
-  <div class="form-group col-md-3 mb-4">
-    <label for="@nameof(dto.Id)" class="form-label">Telegram ID</label>
-
-    <input name="@nameof(dto.Id)"
-            type="password"
-            class="form-control"
-            id="@nameof(dto.Id)"
-            value="@Model.Id"
-            required />
-
-    <div class="invalid-feedback"></div>
-  </div>
-
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <button id="@BTN_SUBMIT_ID"
+    type="submit" 
+    class="btn btn-primary"
+    @(Model.HasToken ? "disabled" : string.Empty)>
+    Save 
+  </button>
 
 </form>
+
+@section Scripts {
+  <partial name="_Declarings" />
+  <script src="~/js/telegram-notifier.js"></script>
+}

@@ -67,6 +67,16 @@ html {
   width: 100%;
 }
 
+.blink:not(.d-none) {
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 /* Button Group */
 .btn-group {
   width: 100%;

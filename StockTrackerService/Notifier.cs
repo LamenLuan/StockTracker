@@ -1,7 +1,7 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
-using StockTracker.Types;
+using StockTrackerService.Types;
 
-namespace StockTracker
+namespace StockTrackerService
 {
   public static class Notifier
   {
@@ -40,6 +40,7 @@ namespace StockTracker
 
     private static void NotifyStocks(List<StockTriggered> stocksTriggered, string message)
     {
+      if (stocksTriggered.Count == 0) return;
       var triggersMessages = stocksTriggered.Select(s => s.ToString());
       var finalMessage = string.Join("\n", triggersMessages);
       Notify(finalMessage, message, buttonConfig: ("See stock trackings", "OpenApp"));

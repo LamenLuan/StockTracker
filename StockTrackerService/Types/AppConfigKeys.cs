@@ -1,4 +1,4 @@
-﻿namespace StockTracker.Types
+﻿namespace StockTrackerService.Types
 {
   public enum AppConfigKeys
   {
@@ -6,8 +6,6 @@
     COOLDOWN,
     START_TIME,
     END_TIME,
-    NEAR_PRICE_RANGE,
-    TOKEN,
-    USER_ID
+    NEAR_PRICE_RANGE
   }
 }

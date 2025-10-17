@@ -57,3 +57,10 @@ function serializeObject(form, serializeDisabled) {
 
 	return objData
 }
+
+function areaPath() {
+	var path = window.location.pathname;
+	return path == '/'
+		? '_/Home'
+		: path.slice(0, -1) + path.at(-1).replace('/', '');
+}

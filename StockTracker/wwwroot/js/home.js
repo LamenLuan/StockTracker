@@ -166,7 +166,6 @@ function updatePctgResult() {
 function cardButtonEvent() {
 	$(document).on('click', `.${CARD_BTN_CLASS}`, function () {
 		const form = $(`#${FORM_ID}`)
-		const btn = $(this)
 		const btns = $(`.${CARD_BTN_CLASS}`)
 
 		if (!form[0].checkValidity()) {

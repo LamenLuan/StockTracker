@@ -1,8 +1,8 @@
-﻿using StockTracker.Types;
+﻿using StockTrackerService.Types;
 using System.Configuration;
 using System.Globalization;
 
-namespace StockTracker.Extensions
+namespace StockTrackerService.Extensions
 {
   public static class AppConfigKeysExtensions
   {
@@ -13,8 +13,6 @@ namespace StockTracker.Extensions
       AppConfigKeys.START_TIME => "StartTime",
       AppConfigKeys.END_TIME => "EndTime",
       AppConfigKeys.NEAR_PRICE_RANGE => "NearPriceRangePctg",
-      AppConfigKeys.TOKEN => "Token",
-      AppConfigKeys.USER_ID => "UserId",
       _ => throw new()
     };
 

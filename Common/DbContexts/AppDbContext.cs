@@ -73,5 +73,13 @@ namespace Common.DbContexts
       settings.ApiKey = apiKey;
       await SaveChangesAsync();
     }
+
+    public async Task SaveTelegramInfo(string botToken, long id)
+    {
+      var settings = await GetSettings();
+      settings.TelegramBotToken = botToken;
+      settings.TelegramId = id;
+      await SaveChangesAsync();
+    }
   }
 }
