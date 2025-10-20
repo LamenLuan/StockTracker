@@ -1,5 +1,6 @@
 using Common.DbContexts;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
 using System.Globalization;
@@ -21,6 +22,12 @@ builder.Services.AddDbContext<AppDbContext>();
 
 builder.WebHost.UseUrls(APP_URL);
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+  var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+  db.Database.Migrate();
+}
 
 var defaultCulture = CultureInfo.InvariantCulture;
 var localizationOptions = new RequestLocalizationOptions

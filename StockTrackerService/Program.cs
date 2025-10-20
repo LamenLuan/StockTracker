@@ -1,6 +1,7 @@
 ﻿using Common.DbContexts;
 using Common.Extensions;
 using Common.Types;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Toolkit.Uwp.Notifications;
 using StockTrackerService;
 using StockTrackerService.Extensions;
@@ -51,6 +52,28 @@ internal class Program
     var connectionTries = 0;
     var apiCommunicated = true;
     await ReadStockTrackingsAsync();
+
+    var stocksTracked = new StockTracking
+    {
+      Symbol = "MGLU3F",
+      RegularMarketPrice = 8F,
+      TrackingToBuy = true,
+    };
+
+    var stockResults2 = new StocksResults
+    {
+      Results = new List<Stock>()
+      {
+        new Stock {
+          Symbol = "MGLU3F",
+          RegularMarketPrice = 8.45F
+        }
+      }
+    };
+
+    StockTriggered(stockResults2, stocksTracked);
+
+    return;
 
     for (int i = 0; i < StocksTracked.Count; i++)
     {
@@ -156,6 +179,7 @@ internal class Program
     ReadAppSettings();
     AddToastClickEvent();
     _context = new AppDbContext();
+    _context.Database.Migrate();
     await ReadDbSettings();
     if (_settings.HasTelegramConfig())
       _telegramNotifier = new TelegramNotifier(_settings.TelegramBotToken!, _settings.TelegramId!.Value);
