@@ -1,0 +1,43 @@
+﻿@using StockTracker.DTOs
+@using StockTracker.Models
+@using static StockTracker.Models.CloudStorageModel;
+
+@model CloudStorageModel
+
+@{
+  ViewData["Title"] = "Cloud Storage";
+  CloudStorageDTO dto;
+}
+
+<form id="@FORM_ID" class="needs-validation" novalidate>
+
+  <div class="form-group col-md-3 mb-3">
+    <label 
+      for="@nameof(dto.MongoConnectionString)" 
+      class="form-label">
+      MongoDB Connection String
+    </label>
+
+    <input name="@nameof(dto.MongoConnectionString)"
+            type="password"
+            class="form-control"
+            id="@nameof(dto.MongoConnectionString)"
+            value="@(Model.HasString ? "some random string" : string.Empty)"
+            required />
+
+    <div class="invalid-feedback"></div>
+  </div>
+
+  <button id="@BTN_SUBMIT_ID"
+    type="submit" 
+    class="btn btn-primary"
+    @(Model.HasString ? "disabled" : string.Empty)>
+    Save 
+  </button>
+
+</form>
+
+@section Scripts {
+  <partial name="_Declarings" />
+  <script src="~/js/cloud-storage.js"></script>
+}

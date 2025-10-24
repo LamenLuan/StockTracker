@@ -6,6 +6,7 @@
     public string? ApiKey { get; set; }
     public string? TelegramBotToken { get; set; }
     public long? TelegramId { get; set; }
+    public string? MongoConnectionString { get; set; }
 
     public bool HasTelegramConfig()
     {
