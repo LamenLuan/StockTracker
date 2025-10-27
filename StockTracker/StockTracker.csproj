@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
     <PackageReference Include="TaskScheduler" Version="2.11.0" />
     <PackageReference Include="Telegram.Bot" Version="22.7.2" />
   </ItemGroup>

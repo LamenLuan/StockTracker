@@ -1,14 +1,13 @@
 ﻿@using StockTracker.Controllers
 @using StockTracker.DTOs
-@using static StockTracker.Models.TelegramNotifierModel
+@using static StockTracker.Models.CloudStorageModel
 
 <script>
 
   const FORM_ID = '@FORM_ID'
-  const TOKEN_INPUT_ID = '@nameof(TelegramNotifierDTO.Token)'
+  const TOKEN_INPUT_ID = '@nameof(CloudStorageDTO.MongoConnectionString)'
   const BTN_SUBMIT_ID = '@BTN_SUBMIT_ID'
-  const HELP_TEXT_ID = '@HELP_TEXT_ID'
 
-  const SET_NOTIFIER_URL = '@nameof(TelegramNotifierController.SetTelegramNotifier)'
+  const SET_NOTIFIER_URL = '@nameof(CloudStorageController.SaveConnectionString)'
 
 </script>
