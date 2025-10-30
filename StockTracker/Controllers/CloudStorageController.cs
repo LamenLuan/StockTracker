@@ -39,25 +39,17 @@ namespace StockTracker.Controllers
       if (string.IsNullOrEmpty(dto.MongoConnectionString))
         return Json(ReturnDTO.Error("No connection string was informed"));
 
-      MongoClient client;
       var document = new BsonDocument("ping", 1);
 
       try
       {
-        client = InstantiateMongoClient(dto.MongoConnectionString);
+        var client = InstantiateMongoClient(dto.MongoConnectionString);
+        _ = client.GetDatabase("admin").RunCommand<BsonDocument>(document);
       }
       catch (Exception)
       {
-        return Json(ReturnDTO.Error("The informed connection string is invalid"));
-      }
-
-      try
-      {
-        var result = client.GetDatabase("admin").RunCommand<BsonDocument>(document);
-      }
-      catch (Exception)
-      {
-        return Json(ReturnDTO.Error("Connection cannot be stablished"));
+        return Json(ReturnDTO.Error("Cannot connect to the clould storage." +
+          " Please check connection and the informed credentials"));
       }
 
       var settings = await _appDbContext.GetSettings();

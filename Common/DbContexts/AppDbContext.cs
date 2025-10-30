@@ -13,8 +13,8 @@ namespace Common.DbContexts
     {
     }
 
-    private DbSet<AppSettings> AppSettings { get; set; } = null!;
-    private DbSet<StockTracking> StockTrackings { get; set; } = null!;
+    protected DbSet<AppSettings> AppSettings { get; set; } = null!;
+    protected DbSet<StockTracking> StockTrackings { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,26 +55,26 @@ namespace Common.DbContexts
       return stockTrackings;
     }
 
-    public async Task AddStockTracking(StockTracking stockTracking)
+    public virtual async Task AddStockTracking(StockTracking stockTracking)
     {
       StockTrackings.Add(stockTracking);
       await SaveChangesAsync();
     }
 
-    public async Task RemoveStockTracking(StockTracking stockTracking)
+    public virtual async Task RemoveStockTracking(StockTracking stockTracking)
     {
       StockTrackings.Remove(stockTracking);
       await SaveChangesAsync();
     }
 
-    public async Task SaveApiKey(string apiKey)
+    public virtual async Task SaveApiKey(string apiKey)
     {
       var settings = await GetSettings();
       settings.ApiKey = apiKey;
       await SaveChangesAsync();
     }
 
-    public async Task SaveTelegramInfo(string botToken, long id)
+    public virtual async Task SaveTelegramInfo(string botToken, long id)
     {
       var settings = await GetSettings();
       settings.TelegramBotToken = botToken;

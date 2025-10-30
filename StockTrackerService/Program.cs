@@ -35,7 +35,7 @@ internal class Program
     {
       if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= EndTime) break;
 
-      await ReadDbSettings();
+      _settings = await _context.GetSettings();
       if (IsApiKeyNotSet()) continue;
 
       await AnalyseTrackings();
@@ -52,28 +52,6 @@ internal class Program
     var connectionTries = 0;
     var apiCommunicated = true;
     await ReadStockTrackingsAsync();
-
-    var stocksTracked = new StockTracking
-    {
-      Symbol = "MGLU3F",
-      RegularMarketPrice = 8F,
-      TrackingToBuy = true,
-    };
-
-    var stockResults2 = new StocksResults
-    {
-      Results = new List<Stock>()
-      {
-        new Stock {
-          Symbol = "MGLU3F",
-          RegularMarketPrice = 8.45F
-        }
-      }
-    };
-
-    StockTriggered(stockResults2, stocksTracked);
-
-    return;
 
     for (int i = 0; i < StocksTracked.Count; i++)
     {
@@ -178,11 +156,33 @@ internal class Program
   {
     ReadAppSettings();
     AddToastClickEvent();
-    _context = new AppDbContext();
-    _context.Database.Migrate();
-    await ReadDbSettings();
+    await LoadDbContext();
     if (_settings.HasTelegramConfig())
       _telegramNotifier = new TelegramNotifier(_settings.TelegramBotToken!, _settings.TelegramId!.Value);
+  }
+
+  private static async Task LoadDbContext()
+  {
+    var appDbContext = new AppDbContext();
+    appDbContext.Database.Migrate();
+    _settings = await appDbContext.GetSettings();
+
+    _context = _settings.MongoConnectionString.HasContent()
+      ? CreateMongoDbContext()
+      : appDbContext;
+  }
+
+  private static MongoDbContext CreateMongoDbContext()
+  {
+    try
+    {
+      return new MongoDbContext(_settings.MongoConnectionString!);
+    }
+    catch (Exception)
+    {
+      Notifier.Notify("Cannot connect to the clould storage. Program closed");
+      throw;
+    }
   }
 
   private static bool IsProgramRunningAlready()
@@ -195,16 +195,6 @@ internal class Program
       return true;
     }
     return false;
-  }
-
-  private static async Task<bool> ReadDbSettings()
-  {
-    _settings = await _context.GetSettings();
-
-    if (string.IsNullOrEmpty(_settings.ApiKey))
-      return false;
-
-    return true;
   }
 
   private static void ReadAppSettings()
