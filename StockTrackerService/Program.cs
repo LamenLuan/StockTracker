@@ -66,12 +66,7 @@ internal class Program
       }
       catch (Exception)
       {
-        if (++connectionTries == 3)
-        {
-          Notifier.Notify("Failed to communicate with API, program closed");
-          return;
-        }
-
+        if (++connectionTries == 3) return;
         CheckIfApiIsCommunicating(ref apiCommunicated, tracked);
         i--;
         continue;
@@ -252,8 +247,6 @@ internal class Program
         Thread.Sleep(TimeSpan.FromDays(1) - timeNow + startTime);
     }
     else Thread.Sleep(startTime - timeNow);
-
-    Notifier.Notify("Tracker started");
   }
 
   private static async Task NotifyTriggersAsync()
