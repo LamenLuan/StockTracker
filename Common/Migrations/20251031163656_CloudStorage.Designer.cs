@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Common.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251027155548_CloudStorage")]
+    [Migration("20251031163656_CloudStorage")]
     partial class CloudStorage
     {
         /// <inheritdoc />

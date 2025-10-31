@@ -13,9 +13,18 @@ namespace StockTracker.Controllers
     {
       if (_appDbContext != null) return;
       var appSettings = appDbContext.GetSettings().Result;
-      _appDbContext = appSettings.MongoConnectionString.HasContent()
-        ? new MongoDbContext(appSettings.MongoConnectionString!)
-        : appDbContext;
+
+      try
+      {
+        _appDbContext = appSettings.MongoConnectionString.HasContent()
+          ? new MongoDbContext(appSettings.MongoConnectionString!)
+          : appDbContext;
+      }
+      catch (Exception)
+      {
+        var msg = "Cannot connect to the clould storage. Please check your connection";
+        throw new Exception(msg);
+      }
     }
   }
 }

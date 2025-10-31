@@ -49,13 +49,13 @@ namespace Common.DbContexts
     public override async Task AddStockTracking(StockTracking stockTracking)
     {
       await base.AddStockTracking(stockTracking);
-      _ = _stockTrackingCollection.InsertOneAsync(stockTracking);
+      await _stockTrackingCollection.InsertOneAsync(stockTracking);
     }
 
     public override async Task RemoveStockTracking(StockTracking stockTracking)
     {
       await base.RemoveStockTracking(stockTracking);
-      _ = _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
+      await _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
     }
 
     public override async Task SaveApiKey(string apiKey)
@@ -63,7 +63,7 @@ namespace Common.DbContexts
       var appSettings = await GetSettings();
       appSettings.ApiKey = apiKey;
       await SaveChangesAsync();
-      _ = _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
 
     public override async Task SaveTelegramInfo(string botToken, long id)
@@ -72,7 +72,7 @@ namespace Common.DbContexts
       appSettings.TelegramBotToken = botToken;
       appSettings.TelegramId = id;
       await SaveChangesAsync();
-      _ = _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
   }
 }
