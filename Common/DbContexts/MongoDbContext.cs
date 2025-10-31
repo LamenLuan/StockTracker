@@ -28,27 +28,34 @@ namespace Common.DbContexts
       var localAppSettings = await GetSettings();
 
       if (appSettings != null)
-        AppSettings.Entry(appSettings).CurrentValues.SetValues(appSettings);
+      {
+        if (!appSettings.Equals(localAppSettings))
+          AppSettings.Entry(appSettings).CurrentValues.SetValues(appSettings);
+      }
       else
         _ = _appSettingsCollection.InsertOneAsync(localAppSettings);
 
       var stockTrackings = await _stockTrackingCollection.Find(t => true).ToListAsync();
-      StockTrackings.RemoveRange(StockTrackings);
-      StockTrackings.AddRange(stockTrackings);
+
+      if (!stockTrackings.SequenceEqual(StockTrackings))
+      {
+        StockTrackings.RemoveRange(StockTrackings);
+        StockTrackings.AddRange(stockTrackings);
+      }
 
       await SaveChangesAsync();
     }
 
     public override async Task AddStockTracking(StockTracking stockTracking)
     {
-      _ = _stockTrackingCollection.InsertOneAsync(stockTracking);
       await base.AddStockTracking(stockTracking);
+      _ = _stockTrackingCollection.InsertOneAsync(stockTracking);
     }
 
     public override async Task RemoveStockTracking(StockTracking stockTracking)
     {
-      _ = _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
       await base.RemoveStockTracking(stockTracking);
+      _ = _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
     }
 
     public override async Task SaveApiKey(string apiKey)

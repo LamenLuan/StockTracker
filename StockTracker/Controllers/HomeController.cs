@@ -9,14 +9,14 @@ using StockTrackerConfigurator.Models;
 
 namespace StockTracker.Controllers
 {
-  public class HomeController(AppDbContext appDbContext) : Controller
+  public class HomeController(AppDbContext appDbContext)
+    : StockTrackerController(appDbContext)
   {
     private static readonly HttpClient _client = new();
-    private readonly AppDbContext _appDbContext = appDbContext;
 
     public async Task<IActionResult> IndexAsync()
     {
-      var stockTrackings = await _appDbContext.GetStockTrackingsAsync();
+      var stockTrackings = await AppDbContext.GetStockTrackingsAsync();
 
       var viewModelList = new List<CreationCardViewModel>
       {
@@ -31,7 +31,7 @@ namespace StockTracker.Controllers
 
     public async Task<IActionResult> GetBrapiKey()
     {
-      var settings = await _appDbContext.GetSettings();
+      var settings = await AppDbContext.GetSettings();
       if (settings == null) return Error();
 
       return GetBrapiKey(settings.ApiKey);
@@ -43,7 +43,7 @@ namespace StockTracker.Controllers
       var resultado = _client.GetStringAsync(url).Result;
       if (resultado == null) return Error();
 
-      await _appDbContext.SaveApiKey(dto.Key);
+      await AppDbContext.SaveApiKey(dto.Key);
       var returnDto = ReturnDTO.Success(dto.Key);
 
       return Json(returnDto);
@@ -51,7 +51,7 @@ namespace StockTracker.Controllers
 
     public async Task<IActionResult> FindStocks(StockSearchDTO dto)
     {
-      var settings = await _appDbContext.GetSettings();
+      var settings = await AppDbContext.GetSettings();
       if (!settings.ApiKey.HasContent()) return Error();
 
       var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={settings.ApiKey}";
@@ -79,7 +79,7 @@ namespace StockTracker.Controllers
 
       try
       {
-        await _appDbContext.AddStockTracking(stockTracking);
+        await AppDbContext.AddStockTracking(stockTracking);
         return Success();
       }
       catch (Exception)
@@ -90,9 +90,9 @@ namespace StockTracker.Controllers
 
     public async Task<IActionResult> RemoveStockTrack(StockTrackDTO dto)
     {
-      var stock = await _appDbContext.GetStockTrackingAsync(dto.Id);
+      var stock = await AppDbContext.GetStockTrackingAsync(dto.Id);
       if (stock == null) return Error();
-      await _appDbContext.RemoveStockTracking(stock);
+      await AppDbContext.RemoveStockTracking(stock);
       return Success();
     }
 

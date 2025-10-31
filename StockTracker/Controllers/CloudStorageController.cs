@@ -9,13 +9,12 @@ using StockTrackerConfigurator.DTOs;
 
 namespace StockTracker.Controllers
 {
-  public class CloudStorageController(AppDbContext appDbContext) : Controller
+  public class CloudStorageController(AppDbContext appDbContext)
+    : StockTrackerController(appDbContext)
   {
-    private readonly AppDbContext _appDbContext = appDbContext;
-
     public async Task<IActionResult> Index()
     {
-      var settings = await _appDbContext.GetSettings();
+      var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
       var model = new CloudStorageModel
@@ -52,11 +51,11 @@ namespace StockTracker.Controllers
           " Please check connection and the informed credentials"));
       }
 
-      var settings = await _appDbContext.GetSettings();
+      var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
       settings.MongoConnectionString = dto.MongoConnectionString;
-      await _appDbContext.SaveChangesAsync();
+      await AppDbContext.SaveChangesAsync();
 
       return Json(ReturnDTO.Success());
     }

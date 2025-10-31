@@ -7,13 +7,12 @@ using Telegram.Bot;
 
 namespace StockTracker.Controllers
 {
-  public class TelegramNotifierController(AppDbContext appDbContext) : Controller
+  public class TelegramNotifierController(AppDbContext appDbContext)
+    : StockTrackerController(appDbContext)
   {
-    private readonly AppDbContext _appDbContext = appDbContext;
-
     public async Task<IActionResult> IndexAsync()
     {
-      var settings = await _appDbContext.GetSettings();
+      var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
       var model = new TelegramNotifierModel
@@ -53,7 +52,7 @@ namespace StockTracker.Controllers
             var id = updates[0].Message?.Chat.Id;
             if (id.HasValue)
             {
-              await _appDbContext.SaveTelegramInfo(client.Token, id.Value);
+              await AppDbContext.SaveTelegramInfo(client.Token, id.Value);
               return ReturnDTO.Success();
             }
           }
