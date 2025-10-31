@@ -53,28 +53,6 @@ internal class Program
     var apiCommunicated = true;
     await ReadStockTrackingsAsync();
 
-    var stocksTracked = new StockTracking
-    {
-      Symbol = "MGLU3F",
-      RegularMarketPrice = 8F,
-      TrackingToBuy = true,
-    };
-
-    var stockResults2 = new StocksResults
-    {
-      Results = new List<Stock>()
-      {
-        new Stock {
-          Symbol = "MGLU3F",
-          RegularMarketPrice = 8.45F
-        }
-      }
-    };
-
-    StockTriggered(stockResults2, stocksTracked);
-
-    return;
-
     for (int i = 0; i < StocksTracked.Count; i++)
     {
       var tracked = StocksTracked[i];
@@ -88,12 +66,7 @@ internal class Program
       }
       catch (Exception)
       {
-        if (++connectionTries == 3)
-        {
-          Notifier.Notify("Failed to communicate with API, program closed");
-          return;
-        }
-
+        if (++connectionTries == 3) return;
         CheckIfApiIsCommunicating(ref apiCommunicated, tracked);
         i--;
         continue;
@@ -262,8 +235,6 @@ internal class Program
         Thread.Sleep(TimeSpan.FromDays(1) - timeNow + startTime);
     }
     else Thread.Sleep(startTime - timeNow);
-
-    Notifier.Notify("Tracker started");
   }
 
   private static async Task NotifyTriggersAsync()
