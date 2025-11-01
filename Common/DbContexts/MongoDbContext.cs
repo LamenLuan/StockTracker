@@ -22,30 +22,6 @@ namespace Common.DbContexts
       SyncData().Wait();
     }
 
-    private async Task SyncData()
-    {
-      var appSettings = _appSettingsCollection.Find(t => true).SingleOrDefault();
-      var localAppSettings = await GetSettings();
-
-      if (appSettings != null)
-      {
-        if (!appSettings.Equals(localAppSettings))
-          AppSettings.Entry(appSettings).CurrentValues.SetValues(appSettings);
-      }
-      else
-        _ = _appSettingsCollection.InsertOneAsync(localAppSettings);
-
-      var stockTrackings = await _stockTrackingCollection.Find(t => true).ToListAsync();
-
-      if (!stockTrackings.SequenceEqual(StockTrackings))
-      {
-        StockTrackings.RemoveRange(StockTrackings);
-        StockTrackings.AddRange(stockTrackings);
-      }
-
-      await SaveChangesAsync();
-    }
-
     public override async Task AddStockTracking(StockTracking stockTracking)
     {
       await base.AddStockTracking(stockTracking);
@@ -60,7 +36,7 @@ namespace Common.DbContexts
 
     public override async Task SaveApiKey(string apiKey)
     {
-      var appSettings = await GetSettings();
+      var appSettings = await base.GetSettings();
       appSettings.ApiKey = apiKey;
       await SaveChangesAsync();
       await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
@@ -68,11 +44,64 @@ namespace Common.DbContexts
 
     public override async Task SaveTelegramInfo(string botToken, long id)
     {
-      var appSettings = await GetSettings();
+      var appSettings = await base.GetSettings();
       appSettings.TelegramBotToken = botToken;
       appSettings.TelegramId = id;
       await SaveChangesAsync();
       await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
+
+    private new async Task<AppSettings> GetSettings()
+    {
+      return await _appSettingsCollection.Find(t => true)
+        .SingleOrDefaultAsync();
+    }
+
+    private new async Task<List<StockTracking>> GetStockTrackingsAsync()
+    {
+      return await _stockTrackingCollection.Find(t => true)
+        .ToListAsync();
+    }
+
+    public async Task<bool> CheckDataDifference()
+    {
+      var appSettings = await GetSettings();
+      var localAppSettings = await base.GetSettings();
+
+      if (localAppSettings != null && appSettings.Equals(localAppSettings))
+        return true;
+
+      var stockTrackings = await GetStockTrackingsAsync();
+
+      return !stockTrackings.SequenceEqual(StockTrackings);
+    }
+
+    #region Auxiliary Methods
+
+    private async Task SyncData()
+    {
+      var appSettings = await GetSettings();
+      var localAppSettings = await base.GetSettings();
+
+      if (appSettings != null)
+      {
+        if (!appSettings.Equals(localAppSettings))
+          AppSettings.Entry(localAppSettings).CurrentValues.SetValues(appSettings);
+      }
+      else
+        await _appSettingsCollection.InsertOneAsync(localAppSettings);
+
+      var stockTrackings = await GetStockTrackingsAsync();
+
+      if (!stockTrackings.SequenceEqual(StockTrackings))
+      {
+        StockTrackings.RemoveRange(StockTrackings);
+        StockTrackings.AddRange(stockTrackings);
+      }
+
+      await SaveChangesAsync();
+    }
+
+    #endregion
   }
 }

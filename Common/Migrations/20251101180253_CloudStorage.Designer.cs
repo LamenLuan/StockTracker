@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Common.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251013195200_TelegramNotifier")]
-    partial class TelegramNotifier
+    [Migration("20251101180253_CloudStorage")]
+    partial class CloudStorage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,6 +26,9 @@ namespace Common.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ApiKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MongoConnectionString")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TelegramBotToken")

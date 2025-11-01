@@ -1,8 +1,6 @@
 ﻿using Common.DbContexts;
 using Common.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using StockTracker.DTOs;
 using StockTracker.Models;
 using StockTrackerConfigurator.DTOs;
@@ -25,12 +23,24 @@ namespace StockTracker.Controllers
       return View(model);
     }
 
-    private static MongoClient InstantiateMongoClient(string connectionString)
+    public async Task<IActionResult> CheckDataDifference(CloudStorageDTO dto)
     {
-      var settings = MongoClientSettings.FromConnectionString(connectionString);
-      settings.ServerApi = new ServerApi(ServerApiVersion.V1);
+      if (string.IsNullOrEmpty(dto.MongoConnectionString))
+        return Json(ReturnDTO.Error("No connection string was informed"));
 
-      return new MongoClient(settings);
+      var localSettings = await AppDbContext.GetSettings();
+      if (localSettings == null) return Json(ReturnDTO.Error());
+
+      if (dto.MongoConnectionString.Equals(localSettings.MongoConnectionString))
+        return Json(ReturnDTO.Error("The connection string is the same as the current one"));
+
+      if (AppDbContext is MongoDbContext mongoDbContext)
+      {
+        var dataDifference = await mongoDbContext.CheckDataDifference();
+        return Json(ReturnDTO.Success(dataDifference));
+      }
+
+      return Json(ReturnDTO.Success(false));
     }
 
     public async Task<IActionResult> SaveConnectionString(CloudStorageDTO dto)
@@ -38,21 +48,11 @@ namespace StockTracker.Controllers
       if (string.IsNullOrEmpty(dto.MongoConnectionString))
         return Json(ReturnDTO.Error("No connection string was informed"));
 
-      var document = new BsonDocument("ping", 1);
-
-      try
-      {
-        var client = InstantiateMongoClient(dto.MongoConnectionString);
-        _ = client.GetDatabase("admin").RunCommand<BsonDocument>(document);
-      }
-      catch (Exception)
-      {
-        return Json(ReturnDTO.Error("Cannot connect to the clould storage." +
-          " Please check connection and the informed credentials"));
-      }
-
       var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
+
+      if (dto.MongoConnectionString.Equals(settings.MongoConnectionString))
+        return Json(ReturnDTO.Error("The connection string is the same as the current one"));
 
       settings.MongoConnectionString = dto.MongoConnectionString;
       await AppDbContext.SaveChangesAsync();

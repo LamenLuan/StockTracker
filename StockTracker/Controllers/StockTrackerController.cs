@@ -6,19 +6,23 @@ namespace StockTracker.Controllers
 {
   public abstract class StockTrackerController : Controller
   {
-    private static AppDbContext? _appDbContext;
-    protected static AppDbContext AppDbContext { get => _appDbContext!; }
+    private readonly AppDbContext? _appDbContext;
+    protected AppDbContext AppDbContext { get => _appDbContext!; }
 
     public StockTrackerController(AppDbContext appDbContext)
     {
-      if (_appDbContext != null) return;
       var appSettings = appDbContext.GetSettings().Result;
 
+      _appDbContext = appSettings.MongoConnectionString.HasContent()
+        ? InsantiateMongoDbContext(appSettings.MongoConnectionString!)
+        : appDbContext;
+    }
+
+    private static MongoDbContext InsantiateMongoDbContext(string connectionString)
+    {
       try
       {
-        _appDbContext = appSettings.MongoConnectionString.HasContent()
-          ? new MongoDbContext(appSettings.MongoConnectionString!)
-          : appDbContext;
+        return new MongoDbContext(connectionString);
       }
       catch (Exception)
       {

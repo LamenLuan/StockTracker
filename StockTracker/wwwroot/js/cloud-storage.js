@@ -10,6 +10,7 @@ function addFormEvents() {
 function submitBtnEvent() {
 	$(document).on('submit', `#${FORM_ID}`, function (e) {
 		e.preventDefault();
+		const form = $(this);
 
 		if (!this.checkValidity()) {
 			this.classList.add('was-validated');
@@ -20,18 +21,41 @@ function submitBtnEvent() {
 		setFormState(true);
 
 		$.post({
-			url: `${areaPath()}/${SET_NOTIFIER_URL}`,
-			data: $(this).serialize(),
+			url: `${areaPath()}/${CHECK_DATA_DIFFERENCE_URL}`,
+			data: form.serialize(),
 			success: response => {
 				if (!response.result) {
 					showErrorAlert(response)
 					return
 				}
-				location.reload();
+
+				if (response.content == 'true') {
+					return;
+				}
+
+				saveConnectionString(form);
 			},
 			error: response => showErrorAlert(response),
 			complete: () => setFormState(false)
 		})
+	})
+}
+
+function saveConnectionString(form) {
+	setFormState(true);
+
+	$.post({
+		url: `${areaPath()}/${SAVE_STRING_URL}`,
+		data: form.serialize(),
+		success: response => {
+			if (!response.result) {
+				showErrorAlert(response)
+				return
+			}
+			location.reload();
+		},
+		error: response => showErrorAlert(response),
+		complete: () => setFormState(false)
 	})
 }
 

@@ -5,7 +5,7 @@
 namespace Common.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class CloudStorage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,7 +16,10 @@ namespace Common.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ApiKey = table.Column<string>(type: "TEXT", nullable: true)
+                    ApiKey = table.Column<string>(type: "TEXT", nullable: true),
+                    TelegramBotToken = table.Column<string>(type: "TEXT", nullable: true),
+                    TelegramId = table.Column<long>(type: "INTEGER", nullable: true),
+                    MongoConnectionString = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
