@@ -22,7 +22,9 @@ namespace StockTracker.Controllers
     {
       try
       {
-        return new MongoDbContext(connectionString);
+        var mongoDbContext = new MongoDbContext(connectionString);
+        mongoDbContext.SyncData().Wait();
+        return mongoDbContext;
       }
       catch (Exception)
       {

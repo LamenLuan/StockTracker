@@ -1,4 +1,6 @@
 ﻿
+using Common.Extensions;
+
 namespace Common.Types
 {
   public class AppSettings
@@ -28,5 +30,22 @@ namespace Common.Types
     {
       return !string.IsNullOrEmpty(TelegramBotToken) && TelegramId.HasValue;
     }
+
+    public bool HasConflictingSettings(AppSettings? other)
+    {
+      if (other == null) return false;
+
+      return
+        HasContentConflict(ApiKey, other.ApiKey)
+        || HasContentConflict(TelegramBotToken, other.TelegramBotToken)
+        || HasContentConflict(MongoConnectionString, other.MongoConnectionString);
+    }
+
+    #region Auxiliary Methods
+
+    private static bool HasContentConflict(string? value, string? otherValue)
+      => value.HasContent() && otherValue.HasContent() && !value!.Equals(otherValue);
+
+    #endregion
   }
 }

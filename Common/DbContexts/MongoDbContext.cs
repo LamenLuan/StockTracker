@@ -18,8 +18,6 @@ namespace Common.DbContexts
 
       _stockTrackingCollection = mongoDatabase.GetCollection<StockTracking>(nameof(StockTracking));
       _appSettingsCollection = mongoDatabase.GetCollection<AppSettings>(nameof(AppSettings));
-
-      SyncData().Wait();
     }
 
     public override async Task AddStockTracking(StockTracking stockTracking)
@@ -51,6 +49,14 @@ namespace Common.DbContexts
       await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
 
+    public override async Task SaveMongoConnectionString(string connectionString)
+    {
+      var appSettings = await base.GetSettings();
+      appSettings.MongoConnectionString = connectionString;
+      await SaveChangesAsync();
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
+    }
+
     private new async Task<AppSettings> GetSettings()
     {
       return await _appSettingsCollection.Find(t => true)
@@ -68,7 +74,7 @@ namespace Common.DbContexts
       var appSettings = await GetSettings();
       var localAppSettings = await base.GetSettings();
 
-      if (localAppSettings != null && appSettings.Equals(localAppSettings))
+      if (appSettings.HasConflictingSettings(localAppSettings))
         return true;
 
       var stockTrackings = await GetStockTrackingsAsync();
@@ -76,9 +82,7 @@ namespace Common.DbContexts
       return !stockTrackings.SequenceEqual(StockTrackings);
     }
 
-    #region Auxiliary Methods
-
-    private async Task SyncData()
+    public async Task SyncData()
     {
       var appSettings = await GetSettings();
       var localAppSettings = await base.GetSettings();
@@ -102,6 +106,20 @@ namespace Common.DbContexts
       await SaveChangesAsync();
     }
 
-    #endregion
+    public async Task SyncData(bool overwriteLocalData)
+    {
+      if (overwriteLocalData)
+      {
+        await SyncData();
+        return;
+      }
+
+      var appSettings = await GetSettings();
+      var localAppSettings = await base.GetSettings();
+
+      await _appSettingsCollection.ReplaceOneAsync(f => true, localAppSettings);
+      await _stockTrackingCollection.DeleteManyAsync(f => true);
+      await _stockTrackingCollection.InsertManyAsync(StockTrackings);
+    }
   }
 }

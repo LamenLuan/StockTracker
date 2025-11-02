@@ -5,7 +5,7 @@
 	modalTitle.text('Error')
 	const errorMsg = `An error ocurred. ${response.content ? response.content : 'Please try again later'}`
 	modalBody.text(errorMsg)
-	new bootstrap.Modal('#modal-alert').show()
+	modal.modal('show')
 }
 
 function showValidationMessages(form) {

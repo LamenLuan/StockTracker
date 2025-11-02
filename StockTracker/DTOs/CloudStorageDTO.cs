@@ -3,6 +3,6 @@
   public class CloudStorageDTO
   {
     public string? MongoConnectionString { get; set; }
-    public bool OverwriteLocalData { get; set; }
+    public bool? OverwriteLocalData { get; set; }
   }
 }

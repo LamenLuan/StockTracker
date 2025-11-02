@@ -163,15 +163,17 @@ internal class Program
     _settings = await appDbContext.GetSettings();
 
     _context = _settings.MongoConnectionString.HasContent()
-      ? CreateMongoDbContext()
+      ? await CreateMongoDbContext()
       : appDbContext;
   }
 
-  private static MongoDbContext CreateMongoDbContext()
+  private static async Task<MongoDbContext> CreateMongoDbContext()
   {
     try
     {
-      return new MongoDbContext(_settings.MongoConnectionString!);
+      var mongoDbContext = new MongoDbContext(_settings.MongoConnectionString!);
+      await mongoDbContext.SyncData();
+      return mongoDbContext;
     }
     catch (Exception)
     {

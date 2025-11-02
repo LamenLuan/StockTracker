@@ -81,5 +81,12 @@ namespace Common.DbContexts
       settings.TelegramId = id;
       await SaveChangesAsync();
     }
+
+    public virtual async Task SaveMongoConnectionString(string connectionString)
+    {
+      var settings = await GetSettings();
+      settings.MongoConnectionString = connectionString;
+      await SaveChangesAsync();
+    }
   }
 }

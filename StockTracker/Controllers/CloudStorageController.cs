@@ -34,13 +34,9 @@ namespace StockTracker.Controllers
       if (dto.MongoConnectionString.Equals(localSettings.MongoConnectionString))
         return Json(ReturnDTO.Error("The connection string is the same as the current one"));
 
-      if (AppDbContext is MongoDbContext mongoDbContext)
-      {
-        var dataDifference = await mongoDbContext.CheckDataDifference();
-        return Json(ReturnDTO.Success(dataDifference));
-      }
-
-      return Json(ReturnDTO.Success(false));
+      var mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
+      var dataDifference = await mongoDbContext.CheckDataDifference();
+      return Json(ReturnDTO.Success(dataDifference));
     }
 
     public async Task<IActionResult> SaveConnectionString(CloudStorageDTO dto)
@@ -54,8 +50,17 @@ namespace StockTracker.Controllers
       if (dto.MongoConnectionString.Equals(settings.MongoConnectionString))
         return Json(ReturnDTO.Error("The connection string is the same as the current one"));
 
-      settings.MongoConnectionString = dto.MongoConnectionString;
-      await AppDbContext.SaveChangesAsync();
+      if (dto.OverwriteLocalData == null)
+      {
+        await AppDbContext.SaveMongoConnectionString(dto.MongoConnectionString);
+        return Json(ReturnDTO.Success());
+      }
+
+      if (AppDbContext is not MongoDbContext mongoDbContext)
+        mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
+
+      await mongoDbContext.SyncData(dto.OverwriteLocalData.Value);
+      await mongoDbContext.SaveMongoConnectionString(dto.MongoConnectionString);
 
       return Json(ReturnDTO.Success());
     }

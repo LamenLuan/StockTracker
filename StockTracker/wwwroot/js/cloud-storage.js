@@ -8,6 +8,8 @@ function addFormEvents() {
 }
 
 function submitBtnEvent() {
+	const modalExport = $(`#${EXPORT_MODAL_ID}`);
+
 	$(document).on('submit', `#${FORM_ID}`, function (e) {
 		e.preventDefault();
 		const form = $(this);
@@ -30,20 +32,21 @@ function submitBtnEvent() {
 				}
 
 				if (response.content == 'true') {
+					modalExport.modal('show');
 					return;
 				}
 
 				saveConnectionString(form);
 			},
-			error: response => showErrorAlert(response),
-			complete: () => setFormState(false)
+			error: response => {
+				showErrorAlert(response);
+				setFormState(false);
+			}
 		})
 	})
 }
 
 function saveConnectionString(form) {
-	setFormState(true);
-
 	$.post({
 		url: `${areaPath()}/${SAVE_STRING_URL}`,
 		data: form.serialize(),
