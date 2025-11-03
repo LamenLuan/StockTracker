@@ -41,6 +41,23 @@ namespace Common.Types
         || HasContentConflict(MongoConnectionString, other.MongoConnectionString);
     }
 
+    public void MergeSettings(AppSettings? other)
+    {
+      if (other == null) return;
+
+      ApiKey ??= other.ApiKey;
+      other.ApiKey ??= ApiKey;
+
+      TelegramBotToken ??= other.TelegramBotToken;
+      other.TelegramBotToken ??= TelegramBotToken;
+
+      MongoConnectionString ??= other.MongoConnectionString;
+      other.MongoConnectionString ??= MongoConnectionString;
+
+      TelegramId ??= other.TelegramId;
+      other.TelegramId ??= TelegramId;
+    }
+
     #region Auxiliary Methods
 
     private static bool HasContentConflict(string? value, string? otherValue)

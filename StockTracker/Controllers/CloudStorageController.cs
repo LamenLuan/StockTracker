@@ -36,6 +36,7 @@ namespace StockTracker.Controllers
 
       var mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
       var dataDifference = await mongoDbContext.CheckDataDifference();
+
       return Json(ReturnDTO.Success(dataDifference));
     }
 
@@ -59,7 +60,7 @@ namespace StockTracker.Controllers
       if (AppDbContext is not MongoDbContext mongoDbContext)
         mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
 
-      await mongoDbContext.SyncData(dto.OverwriteLocalData.Value);
+      await mongoDbContext.MergeData(dto.OverwriteLocalData.Value);
       await mongoDbContext.SaveMongoConnectionString(dto.MongoConnectionString);
 
       return Json(ReturnDTO.Success());

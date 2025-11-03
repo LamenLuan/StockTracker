@@ -57,18 +57,6 @@ namespace Common.DbContexts
       await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
 
-    private new async Task<AppSettings> GetSettings()
-    {
-      return await _appSettingsCollection.Find(t => true)
-        .SingleOrDefaultAsync();
-    }
-
-    private new async Task<List<StockTracking>> GetStockTrackingsAsync()
-    {
-      return await _stockTrackingCollection.Find(t => true)
-        .ToListAsync();
-    }
-
     public async Task<bool> CheckDataDifference()
     {
       var appSettings = await GetSettings();
@@ -79,10 +67,11 @@ namespace Common.DbContexts
 
       var stockTrackings = await GetStockTrackingsAsync();
 
-      return !stockTrackings.SequenceEqual(StockTrackings);
+      return StockTrackings.Any()
+        && !stockTrackings.SequenceEqual(StockTrackings);
     }
 
-    public async Task SyncData()
+    public async Task ImportDataFromCloud()
     {
       var appSettings = await GetSettings();
       var localAppSettings = await base.GetSettings();
@@ -95,6 +84,50 @@ namespace Common.DbContexts
       else
         await _appSettingsCollection.InsertOneAsync(localAppSettings);
 
+      await OverwriteStockTrackings();
+
+      await SaveChangesAsync();
+    }
+
+    public async Task MergeData(bool overwriteLocalData)
+    {
+      var appSettings = await GetSettings();
+      var localAppSettings = await base.GetSettings();
+
+      appSettings.MergeSettings(localAppSettings);
+
+      if (overwriteLocalData)
+      {
+        await OverwriteStockTrackings();
+        await SaveChangesAsync();
+        return;
+      }
+
+      await _appSettingsCollection.ReplaceOneAsync(f => true, localAppSettings);
+      var stockTrackings = await GetStockTrackingsAsync();
+      if (!stockTrackings.SequenceEqual(StockTrackings))
+      {
+        await _stockTrackingCollection.DeleteManyAsync(f => true);
+        await _stockTrackingCollection.InsertManyAsync(StockTrackings);
+      }
+    }
+
+    private new async Task<AppSettings> GetSettings()
+    {
+      return await _appSettingsCollection.Find(t => true)
+        .SingleOrDefaultAsync();
+    }
+
+    private new async Task<List<StockTracking>> GetStockTrackingsAsync()
+    {
+      return await _stockTrackingCollection.Find(t => true)
+        .ToListAsync();
+    }
+
+    #region Auxiliary methods
+
+    private async Task OverwriteStockTrackings()
+    {
       var stockTrackings = await GetStockTrackingsAsync();
 
       if (!stockTrackings.SequenceEqual(StockTrackings))
@@ -102,24 +135,8 @@ namespace Common.DbContexts
         StockTrackings.RemoveRange(StockTrackings);
         StockTrackings.AddRange(stockTrackings);
       }
-
-      await SaveChangesAsync();
     }
 
-    public async Task SyncData(bool overwriteLocalData)
-    {
-      if (overwriteLocalData)
-      {
-        await SyncData();
-        return;
-      }
-
-      var appSettings = await GetSettings();
-      var localAppSettings = await base.GetSettings();
-
-      await _appSettingsCollection.ReplaceOneAsync(f => true, localAppSettings);
-      await _stockTrackingCollection.DeleteManyAsync(f => true);
-      await _stockTrackingCollection.InsertManyAsync(StockTrackings);
-    }
+    #endregion
   }
 }

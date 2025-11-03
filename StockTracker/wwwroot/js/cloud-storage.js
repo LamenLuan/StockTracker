@@ -3,16 +3,18 @@
 })
 
 function addFormEvents() {
-	submitBtnEvent();
+	const form = $(`#${FORM_ID}`)
+	submitBtnEvent(form);
 	tokenInputEvent();
+	exportDataBtnEvent(form);
+	importDataBtnEvent(form);
 }
 
-function submitBtnEvent() {
+function submitBtnEvent(form) {
 	const modalExport = $(`#${EXPORT_MODAL_ID}`);
 
 	$(document).on('submit', `#${FORM_ID}`, function (e) {
 		e.preventDefault();
-		const form = $(this);
 
 		if (!this.checkValidity()) {
 			this.classList.add('was-validated');
@@ -46,10 +48,28 @@ function submitBtnEvent() {
 	})
 }
 
-function saveConnectionString(form) {
+function exportDataBtnEvent(form) {
+	const query = `#${EXPORT_MODAL_ID} #${BTN_EXPORT_ID}`
+	$(document).on('click', query, () => saveConnectionString(form, false));
+}
+
+function importDataBtnEvent(form) {
+	const query = `#${EXPORT_MODAL_ID} #${BTN_IMPORT_ID}`
+	$(document).on('click', query, () => saveConnectionString(form, true));
+}
+
+function tokenInputEvent() {
+	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
+	$(document).one('click', `#${FORM_ID} #${TOKEN_INPUT_ID}`, e => {
+		$(e.currentTarget).val('');
+		btnSubmit.removeAttr('disabled');
+	});
+}
+
+function saveConnectionString(form, overwriteLocalData = null) {
 	$.post({
 		url: `${areaPath()}/${SAVE_STRING_URL}`,
-		data: form.serialize(),
+		data: getSaveDataForm(form, overwriteLocalData),
 		success: response => {
 			if (!response.result) {
 				showErrorAlert(response)
@@ -62,15 +82,13 @@ function saveConnectionString(form) {
 	})
 }
 
+function getSaveDataForm(form, overwriteLocalData) {
+	const data = serializeObject(form);
+	data[OVERWRITE_DATA_PROP] = overwriteLocalData;
+	return data;
+}
+
 function setFormState(awaitingResponse) {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
 	btnSubmit.prop('disabled', awaitingResponse);
-}
-
-function tokenInputEvent() {
-	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
-	$(document).one('click', `#${FORM_ID} #${TOKEN_INPUT_ID}`, e => {
-		$(e.currentTarget).val('');
-		btnSubmit.removeAttr('disabled');
-	});
 }

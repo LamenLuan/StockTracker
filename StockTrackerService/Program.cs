@@ -172,7 +172,7 @@ internal class Program
     try
     {
       var mongoDbContext = new MongoDbContext(_settings.MongoConnectionString!);
-      await mongoDbContext.SyncData();
+      await mongoDbContext.ImportDataFromCloud();
       return mongoDbContext;
     }
     catch (Exception)
