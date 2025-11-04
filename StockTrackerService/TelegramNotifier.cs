@@ -1,4 +1,5 @@
-﻿using StockTrackerService.Types;
+﻿using Common.Types;
+using StockTrackerService.Types;
 using Telegram.Bot;
 
 namespace StockTrackerService
@@ -8,10 +9,10 @@ namespace StockTrackerService
     private TelegramBotClient Client { get; set; }
     private long Id { get; set; }
 
-    public TelegramNotifier(string token, long id)
+    public TelegramNotifier(AppSettings appSettings)
     {
-      Client = new TelegramBotClient(token);
-      Id = id;
+      Client = new TelegramBotClient(appSettings.TelegramBotToken!);
+      Id = appSettings.TelegramId!.Value;
     }
 
     public async Task NotifyStocks(List<StockTriggered> stocks)

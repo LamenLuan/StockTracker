@@ -112,6 +112,21 @@ namespace Common.DbContexts
       }
     }
 
+    public async Task UpdateLastNotification(Guid activeTrackerId, DateTime lastNotification)
+    {
+      var appSettings = await base.GetSettings();
+      appSettings.TrackerGuid = activeTrackerId;
+      appSettings.LastNotification = lastNotification;
+
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
+    }
+
+    public async Task<(Guid? activeTrackerId, DateTime? lastNotification)> GetLastNotificationInfo()
+    {
+      var appSettings = await base.GetSettings();
+      return (appSettings.TrackerGuid, appSettings.LastNotification);
+    }
+
     private new async Task<AppSettings> GetSettings()
     {
       return await _appSettingsCollection.Find(t => true)

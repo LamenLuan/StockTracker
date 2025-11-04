@@ -15,6 +15,7 @@ internal class Program
   private static TimeSpan EndTime;
   public static TimeSpan Cooldown;
   public static float PriceRange;
+  private static Guid Guid { get; set; } = Guid.NewGuid();
 
   private static List<StockTracking> StocksTracked = [];
   private static AppDbContext _context = null!;
@@ -153,7 +154,7 @@ internal class Program
     AddToastClickEvent();
     await LoadDbContext();
     if (_settings.HasTelegramConfig())
-      _telegramNotifier = new TelegramNotifier(_settings.TelegramBotToken!, _settings.TelegramId!.Value);
+      _telegramNotifier = new TelegramNotifier(_settings);
   }
 
   private static async Task LoadDbContext()
@@ -259,7 +260,26 @@ internal class Program
     Notifier.NotifyStocks(StocksTriggered, StocksNearTrigger);
 
     if (_telegramNotifier != null)
+    {
+      if (_context is MongoDbContext mongoDbContext)
+      {
+        var cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan()
+          + TimeSpan.FromMinutes(1);
+
+        var (activeTrackerId, lastNotification) = await mongoDbContext.GetLastNotificationInfo();
+
+        TimeSpan? timeSinceLastNotification = lastNotification.HasValue
+          ? DateTime.UtcNow - lastNotification.Value
+          : null;
+
+        if (Guid != activeTrackerId && timeSinceLastNotification.HasValue && cooldown > timeSinceLastNotification)
+          return;
+
+        await mongoDbContext.UpdateLastNotification(Guid, DateTime.UtcNow);
+      }
+
       await _telegramNotifier.NotifyStocks(allTriggers);
+    }
 
     StocksTriggered.Clear();
     StocksNearTrigger.Clear();

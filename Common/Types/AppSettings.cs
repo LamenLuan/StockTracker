@@ -1,5 +1,7 @@
 ﻿
 using Common.Extensions;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Common.Types
 {
@@ -11,6 +13,10 @@ namespace Common.Types
     public long? TelegramId { get; set; }
     public string? MongoConnectionString { get; set; }
 
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public Guid? TrackerGuid { get; set; }
+    public DateTime? LastNotification { get; set; }
+
     public override bool Equals(object? obj)
     {
       return obj is AppSettings settings &&
@@ -18,12 +24,14 @@ namespace Common.Types
              ApiKey == settings.ApiKey &&
              TelegramBotToken == settings.TelegramBotToken &&
              TelegramId == settings.TelegramId &&
-             MongoConnectionString == settings.MongoConnectionString;
+             MongoConnectionString == settings.MongoConnectionString &&
+             EqualityComparer<Guid?>.Default.Equals(TrackerGuid, settings.TrackerGuid) &&
+             LastNotification == settings.LastNotification;
     }
 
     public override int GetHashCode()
     {
-      return HashCode.Combine(Id, ApiKey, TelegramBotToken, TelegramId, MongoConnectionString);
+      return HashCode.Combine(Id, ApiKey, TelegramBotToken, TelegramId, MongoConnectionString, TrackerGuid, LastNotification);
     }
 
     public bool HasTelegramConfig()
