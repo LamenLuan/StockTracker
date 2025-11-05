@@ -35,10 +35,14 @@ function submitBtnEvent(form) {
 
 				if (response.content == 'true') {
 					modalExport.modal('show');
+					setFormState(false);
 					return;
 				}
 
-				saveConnectionString(form);
+				saveConnectionString({
+					form: form,
+					onCompleteHandler: () => setFormState(false)
+				});
 			},
 			error: response => {
 				showErrorAlert(response);
@@ -49,13 +53,27 @@ function submitBtnEvent(form) {
 }
 
 function exportDataBtnEvent(form) {
-	const query = `#${EXPORT_MODAL_ID} #${BTN_EXPORT_ID}`
-	$(document).on('click', query, () => saveConnectionString(form, false));
+	const query = `#${EXPORT_MODAL_ID} #${BTN_EXPORT_ID}`;
+	$(document).on('click', query, () => saveConnectionStringFromModalExport(form, true));
 }
 
 function importDataBtnEvent(form) {
-	const query = `#${EXPORT_MODAL_ID} #${BTN_IMPORT_ID}`
-	$(document).on('click', query, () => saveConnectionString(form, true));
+	const query = `#${EXPORT_MODAL_ID} #${BTN_IMPORT_ID}`;
+	$(document).on('click', query, () => saveConnectionStringFromModalExport(form, true));
+}
+
+function saveConnectionStringFromModalExport(form, overwriteLocalData) {
+	setModalExportState(true);
+	saveConnectionString({
+		form: form,
+		overwriteLocalData: overwriteLocalData,
+		onCompleteHandler: () => setModalExportState(false)
+	});
+}
+
+function setModalExportState(awaitingResponse) {
+	const query = `#${EXPORT_MODAL_ID} .modal-footer:first button`;
+	 $(query).prop('disabled', awaitingResponse);
 }
 
 function tokenInputEvent() {
@@ -66,7 +84,7 @@ function tokenInputEvent() {
 	});
 }
 
-function saveConnectionString(form, overwriteLocalData = null) {
+function saveConnectionString({ form, overwriteLocalData = null, onCompleteHandler = null }) {
 	$.post({
 		url: `${areaPath()}/${SAVE_STRING_URL}`,
 		data: getSaveDataForm(form, overwriteLocalData),
@@ -78,7 +96,9 @@ function saveConnectionString(form, overwriteLocalData = null) {
 			location.reload();
 		},
 		error: response => showErrorAlert(response),
-		complete: () => setFormState(false)
+		complete: () => {
+			if (onCompleteHandler) onCompleteHandler();
+		}
 	})
 }
 
