@@ -16,6 +16,16 @@ namespace Common.Types
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid? TrackerGuid { get; set; }
     public DateTime? LastNotification { get; set; }
+    public TimeSpan AppClosingTime { get; set; }
+    public float PriceRange { get; set; }
+    public TimeSpan Cooldown { get; set; }
+
+    public AppSettings()
+    {
+      AppClosingTime = new TimeSpan(17, 0, 0);
+      PriceRange = 0.1f;
+      Cooldown = new TimeSpan(0, 10, 0);
+    }
 
     public override bool Equals(object? obj)
     {

@@ -36,13 +36,14 @@ internal class Program
     {
       if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= EndTime) break;
 
-      _settings = await _context.GetSettings();
-      if (IsApiKeyNotSet()) continue;
+      if (IsApiKeySet())
+      {
+        await AnalyseTrackings();
+        await NotifyTriggersAsync();
+      }
 
-      await AnalyseTrackings();
-
-      await NotifyTriggersAsync();
-      Thread.Sleep(Cooldown);
+      _context.Dispose();
+      await WaitCooldownLoadDbContext();
     }
   }
 
@@ -136,16 +137,15 @@ internal class Program
       (IsProgramRunningAlready() || IsMarketClosedDay());
   }
 
-  private static bool IsApiKeyNotSet()
+  private static bool IsApiKeySet()
   {
     if (string.IsNullOrEmpty(_settings.ApiKey))
     {
       Notifier.Notify("API Key not set", buttonConfig: ("Configure Key", "OpenApp"));
-      Thread.Sleep(Cooldown);
-      return true;
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   private static async Task LoadAppResources()
@@ -159,13 +159,17 @@ internal class Program
 
   private static async Task LoadDbContext()
   {
-    var appDbContext = new AppDbContext();
-    appDbContext.Database.Migrate();
-    _settings = await appDbContext.GetSettings();
+    if (_context == null)
+    {
+      _context = new AppDbContext();
+      _context.Database.Migrate();
+      _settings = await _context.GetSettings();
+    }
 
-    _context = _settings.MongoConnectionString.HasContent()
-      ? await CreateMongoDbContext()
-      : appDbContext;
+    if (_settings.MongoConnectionString.HasContent())
+      _context = await CreateMongoDbContext();
+
+    _settings = await _context.GetSettings();
   }
 
   private static async Task<MongoDbContext> CreateMongoDbContext()
@@ -318,6 +322,22 @@ internal class Program
     catch (Exception)
     {
       Notifier.Notify("Could not open the application");
+    }
+  }
+
+  private static async Task WaitCooldownLoadDbContext()
+  {
+    var totalTimeWaited = TimeSpan.Zero;
+
+    while (true)
+    {
+      var coolDown = _settings.Cooldown;
+      totalTimeWaited += coolDown;
+
+      Thread.Sleep(coolDown);
+
+      await LoadDbContext();
+      if (totalTimeWaited >= _settings.Cooldown) break;
     }
   }
 }
