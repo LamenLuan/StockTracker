@@ -16,12 +16,14 @@ namespace Common.Types
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid? TrackerGuid { get; set; }
     public DateTime? LastNotification { get; set; }
+    public TimeSpan AppStartTime { get; set; }
     public TimeSpan AppClosingTime { get; set; }
     public float PriceRange { get; set; }
     public TimeSpan Cooldown { get; set; }
 
     public AppSettings()
     {
+      AppStartTime = new TimeSpan(9, 50, 0);
       AppClosingTime = new TimeSpan(17, 0, 0);
       PriceRange = 0.1f;
       Cooldown = new TimeSpan(0, 10, 0);
@@ -36,12 +38,28 @@ namespace Common.Types
              TelegramId == settings.TelegramId &&
              MongoConnectionString == settings.MongoConnectionString &&
              EqualityComparer<Guid?>.Default.Equals(TrackerGuid, settings.TrackerGuid) &&
-             LastNotification == settings.LastNotification;
+             LastNotification == settings.LastNotification &&
+             AppStartTime.Equals(settings.AppStartTime) &&
+             AppClosingTime.Equals(settings.AppClosingTime) &&
+             PriceRange == settings.PriceRange &&
+             Cooldown.Equals(settings.Cooldown);
     }
 
     public override int GetHashCode()
     {
-      return HashCode.Combine(Id, ApiKey, TelegramBotToken, TelegramId, MongoConnectionString, TrackerGuid, LastNotification);
+      HashCode hash = new HashCode();
+      hash.Add(Id);
+      hash.Add(ApiKey);
+      hash.Add(TelegramBotToken);
+      hash.Add(TelegramId);
+      hash.Add(MongoConnectionString);
+      hash.Add(TrackerGuid);
+      hash.Add(LastNotification);
+      hash.Add(AppStartTime);
+      hash.Add(AppClosingTime);
+      hash.Add(PriceRange);
+      hash.Add(Cooldown);
+      return hash.ToHashCode();
     }
 
     public bool HasTelegramConfig()

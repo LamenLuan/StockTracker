@@ -4,7 +4,6 @@ using Common.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Toolkit.Uwp.Notifications;
 using StockTrackerService;
-using StockTrackerService.Extensions;
 using StockTrackerService.Types;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
@@ -12,15 +11,12 @@ using static Common.Constants;
 
 internal class Program
 {
-  private static TimeSpan EndTime;
-  public static TimeSpan Cooldown;
-  public static float PriceRange;
   private static Guid Guid { get; set; } = Guid.NewGuid();
-
   private static List<StockTracking> StocksTracked = [];
   private static AppDbContext _context = null!;
   private static TelegramNotifier _telegramNotifier = null!;
   private static AppSettings _settings = null!;
+
   private static readonly HttpClient _client = new();
   private static readonly List<StockTriggered> StocksTriggered = [];
   private static readonly List<StockTriggered> StocksNearTrigger = [];
@@ -34,7 +30,8 @@ internal class Program
 
     while (true)
     {
-      if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= EndTime) break;
+      if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= _settings.AppClosingTime)
+        break;
 
       if (IsApiKeySet())
       {
@@ -101,7 +98,7 @@ internal class Program
       return true;
     }
 
-    if (PriceTriggered(tracked, priceNow, PriceRange))
+    if (PriceTriggered(tracked, priceNow, _settings.PriceRange))
     {
       var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksNearTrigger.Add(stockTriggered);
@@ -150,7 +147,6 @@ internal class Program
 
   private static async Task LoadAppResources()
   {
-    ReadAppSettings();
     AddToastClickEvent();
     await LoadDbContext();
     if (_settings.HasTelegramConfig())
@@ -199,13 +195,6 @@ internal class Program
     return false;
   }
 
-  private static void ReadAppSettings()
-  {
-    EndTime = AppConfigKeys.END_TIME.GetAsTimeSpan();
-    PriceRange = AppConfigKeys.NEAR_PRICE_RANGE.GetAsFloat();
-    Cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan();
-  }
-
   private static async Task<bool> ReadStockTrackingsAsync()
   {
     StocksTracked = await _context.GetStockTrackingsAsync();
@@ -245,15 +234,14 @@ internal class Program
   {
     if (Debugger.IsAttached) return;
 
-    var startTime = AppConfigKeys.START_TIME.GetAsTimeSpan();
     var timeNow = DateTime.Now.TimeOfDay;
 
-    if (timeNow >= startTime)
+    if (timeNow >= _settings.AppStartTime)
     {
-      if (timeNow >= EndTime)
-        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + startTime);
+      if (timeNow >= _settings.AppClosingTime)
+        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime);
     }
-    else Thread.Sleep(startTime - timeNow);
+    else Thread.Sleep(_settings.AppStartTime - timeNow);
   }
 
   private static async Task NotifyTriggersAsync()
@@ -267,9 +255,7 @@ internal class Program
     {
       if (_context is MongoDbContext mongoDbContext)
       {
-        var cooldown = AppConfigKeys.COOLDOWN.GetAsTimeSpan()
-          + TimeSpan.FromMinutes(1);
-
+        var cooldown = _settings.Cooldown + TimeSpan.FromMinutes(1);
         var (activeTrackerId, lastNotification) = await mongoDbContext.GetLastNotificationInfo();
 
         TimeSpan? timeSinceLastNotification = lastNotification.HasValue
