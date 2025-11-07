@@ -1,0 +1,26 @@
+﻿@using Common.Extensions
+@using StockTracker.Models.Shared.Form.Inputs
+@using StockTracker.Models.Shared.Inputs
+@model NumberInputModel
+
+<div class="form-group col-md-3 mb-3">
+
+  @if(Model.Label.HasContent())
+  {
+    <label for="@nameof(Model.Value)"
+           class="form-label">
+      @Model.Label
+    </label>
+  }
+
+  <input name="@nameof(Model.Value)"s
+         type="number"
+         class="form-control"
+         id="@nameof(Model.Value)"
+         value="@Model.Value"
+         required="@Model.IsRequired.ToString().ToLower()" 
+         min="@Model.Min"
+         max="@Model.Max"/>
+
+  <div class="invalid-feedback"></div>
+</div>

@@ -1,0 +1,21 @@
+﻿@using StockTracker.Models.Shared.Form.Inputs
+@using StockTracker.Models.Shared.Inputs
+
+@{
+  const string FOLDER = "Inputs";
+}
+
+@if(Model is TextInputModel)
+{
+  <partial name="@FOLDER/_TextInput" model="Model" />
+}
+else if(Model is NumberInputModel)
+{
+  <partial name="@FOLDER/_NumberInput" model="Model" />
+}
+else if (Model is TimeInputModel)
+{
+  <partial name="@FOLDER/_TimeInput" model="Model" />
+}
+else 
+  throw new InvalidOperationException("Unsupported input model type");
