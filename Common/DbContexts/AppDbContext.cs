@@ -1,4 +1,5 @@
-﻿using Common.Types;
+﻿using Common.DTOs;
+using Common.Types;
 using Microsoft.EntityFrameworkCore;
 
 namespace Common.DbContexts
@@ -86,6 +87,25 @@ namespace Common.DbContexts
     {
       var settings = await GetSettings();
       settings.MongoConnectionString = connectionString;
+      await SaveChangesAsync();
+    }
+
+    public virtual async Task SaveSettings(SettingsDTO dto, AppSettings? settings = null)
+    {
+      settings ??= await GetSettings();
+
+      if (dto.AppStartTime != null)
+        settings.AppStartTime = dto.AppStartTime.Value;
+
+      if (dto.AppClosingTime != null)
+        settings.AppClosingTime = dto.AppClosingTime.Value;
+
+      if (dto.PriceRange != null)
+        settings.PriceRange = dto.PriceRange.Value;
+
+      if (dto.Cooldown != null)
+        settings.Cooldown = dto.Cooldown.Value;
+
       await SaveChangesAsync();
     }
   }

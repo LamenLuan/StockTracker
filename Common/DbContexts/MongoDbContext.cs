@@ -1,4 +1,5 @@
-﻿using Common.Types;
+﻿using Common.DTOs;
+using Common.Types;
 using MongoDB.Driver;
 
 namespace Common.DbContexts
@@ -20,6 +21,8 @@ namespace Common.DbContexts
       _appSettingsCollection = mongoDatabase.GetCollection<AppSettings>(nameof(AppSettings));
     }
 
+    #region StockTracking
+
     public override async Task AddStockTracking(StockTracking stockTracking)
     {
       await base.AddStockTracking(stockTracking);
@@ -31,6 +34,16 @@ namespace Common.DbContexts
       await base.RemoveStockTracking(stockTracking);
       await _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
     }
+
+    private new async Task<List<StockTracking>> GetStockTrackingsAsync()
+    {
+      return await _stockTrackingCollection.Find(t => true)
+        .ToListAsync();
+    }
+
+    #endregion
+
+    #region AppSettings
 
     public override async Task SaveApiKey(string apiKey)
     {
@@ -57,12 +70,42 @@ namespace Common.DbContexts
       await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
     }
 
+    public override async Task SaveSettings(SettingsDTO dto, AppSettings? settings = null)
+    {
+      settings ??= await base.GetSettings();
+      await base.SaveSettings(dto, settings);
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == settings.Id, settings);
+    }
+
+    public async Task UpdateLastNotification(Guid activeTrackerId, DateTime lastNotification)
+    {
+      var appSettings = await base.GetSettings();
+      appSettings.TrackerGuid = activeTrackerId;
+      appSettings.LastNotification = lastNotification;
+
+      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
+    }
+
+    public async Task<(Guid? activeTrackerId, DateTime? lastNotification)> GetLastNotificationInfo()
+    {
+      var appSettings = await base.GetSettings();
+      return (appSettings.TrackerGuid, appSettings.LastNotification);
+    }
+
+    private new async Task<AppSettings> GetSettings()
+    {
+      return await _appSettingsCollection.Find(t => true)
+        .SingleOrDefaultAsync();
+    }
+
+    #endregion
+
     public async Task<bool> CheckDataDifference()
     {
       var appSettings = await GetSettings();
       var localAppSettings = await base.GetSettings();
 
-      if (appSettings.HasConflictingSettings(localAppSettings))
+      if (!appSettings.Equals(localAppSettings))
         return true;
 
       var stockTrackings = await GetStockTrackingsAsync();
@@ -98,6 +141,7 @@ namespace Common.DbContexts
 
       if (overwriteLocalData)
       {
+        AppSettings.Entry(localAppSettings).CurrentValues.SetValues(appSettings);
         await OverwriteStockTrackings();
         await SaveChangesAsync();
         return;
@@ -110,33 +154,6 @@ namespace Common.DbContexts
         await _stockTrackingCollection.DeleteManyAsync(f => true);
         await _stockTrackingCollection.InsertManyAsync(StockTrackings);
       }
-    }
-
-    public async Task UpdateLastNotification(Guid activeTrackerId, DateTime lastNotification)
-    {
-      var appSettings = await base.GetSettings();
-      appSettings.TrackerGuid = activeTrackerId;
-      appSettings.LastNotification = lastNotification;
-
-      await _appSettingsCollection.ReplaceOneAsync(s => s.Id == appSettings.Id, appSettings);
-    }
-
-    public async Task<(Guid? activeTrackerId, DateTime? lastNotification)> GetLastNotificationInfo()
-    {
-      var appSettings = await base.GetSettings();
-      return (appSettings.TrackerGuid, appSettings.LastNotification);
-    }
-
-    private new async Task<AppSettings> GetSettings()
-    {
-      return await _appSettingsCollection.Find(t => true)
-        .SingleOrDefaultAsync();
-    }
-
-    private new async Task<List<StockTracking>> GetStockTrackingsAsync()
-    {
-      return await _stockTrackingCollection.Find(t => true)
-        .ToListAsync();
     }
 
     #region Auxiliary methods

@@ -2,18 +2,15 @@
 
 @model FormModel
 
-<form id="@Model.Id" class="needs-validation" novalidate>
+@if(Model != null) {
+  <form id="@Model.Id" class="needs-validation" novalidate>
 
-  @foreach(var input in Model.Inputs)
-  {
-    <partial name="Inputs/_FormInput" model="input"/>
-  }
+    @foreach (var input in Model.Inputs)
+    {
+      <partial name="Form/Inputs/_FormInput" model="input" />
+    }
 
-  <button id="@BTN_SUBMIT_ID"
-          type="submit"
-          class="btn btn-primary"
-    @(Model.HasString ? "disabled" : string.Empty)>
-    Save
-  </button>
+    <partial name="Form/_FormButton" model="Model.FormButtonModel" />
 
-</form>
+  </form>
+}

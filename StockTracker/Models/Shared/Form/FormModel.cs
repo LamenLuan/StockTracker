@@ -4,7 +4,14 @@ namespace StockTracker.Models.Shared.Form
 {
   public abstract class FormModel
   {
-    public required string Id { get; set; }
-    public required InputModel[] Inputs { get; set; }
+    public string Id { get; set; }
+    public InputModel[] Inputs { get; set; }
+    public FormButtonModel? FormButtonModel { get; set; }
+
+    protected FormModel()
+    {
+      Id = string.Empty;
+      Inputs = [];
+    }
   }
 }

@@ -1,0 +1,13 @@
+﻿@using StockTracker.Models.Shared.Form
+@model FormButtonModel
+
+@if (Model != null)
+{
+  <button 
+    id="@Model.Id"
+    type="submit"
+    class="btn btn-primary"
+    @(Model.Disabled ? "disabled" : string.Empty)>
+    Save
+  </button>
+}

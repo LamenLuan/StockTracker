@@ -1,4 +1,4 @@
-﻿using StockTracker.DTOs;
+﻿using Common.DTOs;
 using StockTracker.Models.Shared.Form;
 using StockTracker.Models.Shared.Form.Inputs;
 
@@ -6,19 +6,24 @@ namespace StockTracker.Models
 {
   public class SettingsModel : FormModel
   {
-    public const string FORM_ID = "cloud-storage-form";
-    public const string BTN_SUBMIT_ID = "btn-submit-cloud-storage";
-    public const string EXPORT_MODAL_ID = "export-modal-id";
-    public const string BTN_EXPORT_ID = "export-btn-id";
-    public const string BTN_IMPORT_ID = "import-btn-id";
-
-    public SettingsDTO Settings { get; set; }
+    public const string FORM_ID = "settings-form";
+    public const string BTN_SUBMIT_ID = "btn-submit-settings";
 
     public SettingsModel(SettingsDTO settingsDTO)
     {
       Id = FORM_ID;
-      Settings = settingsDTO;
       Inputs = CreateInputs(settingsDTO);
+      FormButtonModel = CreateFormButton();
+    }
+
+    private static FormButtonModel? CreateFormButton()
+    {
+      return new FormButtonModel
+      {
+        Id = BTN_SUBMIT_ID,
+        Label = "Save",
+        Disabled = false,
+      };
     }
 
     private static InputModel[] CreateInputs(SettingsDTO settingsDTO)
@@ -27,28 +32,29 @@ namespace StockTracker.Models
       [
         new TimeInputModel
         {
-          Label = "App Start Time",
+          Label = "App start time",
           Name = nameof(settingsDTO.AppStartTime),
           Value = settingsDTO.AppStartTime?.ToString() ?? string.Empty,
           IsRequired = true,
         },
         new TimeInputModel
         {
-          Label = "App Closing Time",
+          Label = "App closing time",
           Name = nameof(settingsDTO.AppClosingTime),
           Value = settingsDTO.AppClosingTime?.ToString() ?? string.Empty,
           IsRequired = true,
         },
         new NumberInputModel
         {
-          Label = "Price Range",
+          Label = "Price range (%)",
           Name = nameof(settingsDTO.PriceRange),
           Value = settingsDTO.PriceRange?.ToString() ?? string.Empty,
           IsRequired = true,
+          Step = 0.1f
         },
-        new NumberInputModel
+        new TimeInputModel
         {
-          Label = "Cooldown (in minutes)",
+          Label = "Cooldown time",
           Name = nameof(settingsDTO.Cooldown),
           Value = settingsDTO.Cooldown?.ToString() ?? string.Empty,
           IsRequired = true,

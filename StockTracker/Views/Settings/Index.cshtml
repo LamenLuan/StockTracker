@@ -6,73 +6,11 @@
 
 @{
   ViewData["Title"] = "Settings";
-  SettingsDTO dto = Model.Settings;
 }
 
-<form id="@FORM_ID" class="needs-validation" novalidate>
-
-
-
-  <partial name="_TextInput" value/>
-
-  <div class="form-group col-md-3 mb-3">
-    <label for="@nameof(dto.AppStartTime)"
-           class="form-label">
-      Tracker start time
-    </label>
-
-    <input name="@nameof(dto.AppStartTime)"
-           type="password"
-           class="form-control"
-           id="@nameof(dto.AppStartTime)"
-           value="@dto.AppStartTime.ToString()"
-           required />
-
-    <div class="invalid-feedback"></div>
-  </div>
-
-  <div class="form-group col-md-3 mb-3">
-    <label for="@nameof(dto.AppClosingTime)"
-           class="form-label">
-      Tracker closing time
-    </label>
-
-    <input name="@nameof(dto.AppClosingTime)"
-           type="password"
-           class="form-control"
-           id="@nameof(dto.AppClosingTime)"
-           value="@dto.AppClosingTime.ToString()"
-           required />
-
-    <div class="invalid-feedback"></div>
-  </div>
-
-  <div class="form-group col-md-3 mb-3">
-    <label for="@nameof(dto.AppClosingTime)"
-           class="form-label">
-      Tracker closing time
-    </label>
-
-    <input name="@nameof(dto.AppClosingTime)"
-           type="password"
-           class="form-control"
-           id="@nameof(dto.AppClosingTime)"
-           value="@dto.AppClosingTime.ToString()"
-           required />
-
-    <div class="invalid-feedback"></div>
-  </div>
-
-  <button id="@BTN_SUBMIT_ID"
-          type="submit"
-          class="btn btn-primary"
-  @(Model.HasString ? "disabled" : string.Empty)>
-    Save
-  </button>
-
-</form>
+<partial name="Form/_Form" model="Model" />
 
 @section Scripts {
   <partial name="_Declarings" />
-  <script src="~/js/telegram-notifier.js"></script>
+  <script src="~/js/settings.js"></script>
 }

@@ -1,6 +1,4 @@
-﻿
-using Common.Extensions;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Common.Types
@@ -67,16 +65,6 @@ namespace Common.Types
       return !string.IsNullOrEmpty(TelegramBotToken) && TelegramId.HasValue;
     }
 
-    public bool HasConflictingSettings(AppSettings? other)
-    {
-      if (other == null) return false;
-
-      return
-        HasContentConflict(ApiKey, other.ApiKey)
-        || HasContentConflict(TelegramBotToken, other.TelegramBotToken)
-        || HasContentConflict(MongoConnectionString, other.MongoConnectionString);
-    }
-
     public void MergeSettings(AppSettings? other)
     {
       if (other == null) return;
@@ -93,12 +81,5 @@ namespace Common.Types
       TelegramId ??= other.TelegramId;
       other.TelegramId ??= TelegramId;
     }
-
-    #region Auxiliary Methods
-
-    private static bool HasContentConflict(string? value, string? otherValue)
-      => value.HasContent() && otherValue.HasContent() && !value!.Equals(otherValue);
-
-    #endregion
   }
 }

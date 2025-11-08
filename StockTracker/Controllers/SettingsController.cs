@@ -1,6 +1,6 @@
 ﻿using Common.DbContexts;
+using Common.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using StockTracker.DTOs;
 using StockTracker.Models;
 using StockTrackerConfigurator.DTOs;
 
@@ -14,18 +14,29 @@ namespace StockTracker.Controllers
       var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
-      var model = new CloudStorageModel
+      var viewModel = new SettingsDTO
       {
-        Settings = new SettingsDTO
-        {
-          AppClosingTime = settings.AppClosingTime,
-          AppStartTime = settings.AppStartTime,
-          Cooldown = settings.Cooldown,
-          PriceRange = settings.PriceRange
-        }
+        AppClosingTime = settings.AppClosingTime,
+        AppStartTime = settings.AppStartTime,
+        Cooldown = settings.Cooldown,
+        PriceRange = settings.PriceRange
       };
 
+      var model = new SettingsModel(viewModel);
+
       return View(model);
+    }
+
+    public async Task<IActionResult> SaveSettings(SettingsDTO dto)
+    {
+      var settings = await AppDbContext.GetSettings();
+      if (settings == null) return Json(ReturnDTO.Error());
+
+      if (SettingsDTO.ParseSettingsToDTO(settings).Equals(dto))
+        return Json(ReturnDTO.Error("No changes were detected"));
+
+      await AppDbContext.SaveSettings(dto, settings);
+      return Json(ReturnDTO.Success());
     }
   }
 }

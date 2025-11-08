@@ -1,26 +1,18 @@
-﻿@using Common.Extensions
-@using StockTracker.Models.Shared.Form.Inputs
-@using StockTracker.Models.Shared.Inputs
+﻿@using StockTracker.Models.Shared.Form.Inputs
 @model NumberInputModel
 
 <div class="form-group col-md-3 mb-3">
 
-  @if(Model.Label.HasContent())
-  {
-    <label for="@nameof(Model.Value)"
-           class="form-label">
-      @Model.Label
-    </label>
-  }
+  <partial name="Form/Inputs/_InputLabel" model="Model.Label" />
 
-  <input name="@nameof(Model.Value)"s
+  <input name="@Model.Name"
          type="number"
          class="form-control"
-         id="@nameof(Model.Value)"
          value="@Model.Value"
          required="@Model.IsRequired.ToString().ToLower()" 
          min="@Model.Min"
-         max="@Model.Max"/>
+         max="@Model.Max"
+         step="@Model.Step"/>
 
   <div class="invalid-feedback"></div>
 </div>
