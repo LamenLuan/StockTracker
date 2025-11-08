@@ -37,14 +37,14 @@ function submitBtnEvent() {
 
 function setFormState(awaitingResponse) {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
-	const helpText = $(`#${FORM_ID} #${HELP_TEXT_ID}`);
+	const helpText = $(`#${HELP_TEXT_ID}`);
 	btnSubmit.prop('disabled', awaitingResponse);
 	helpText.toggleClass('d-none', !awaitingResponse);
 }
 
 function tokenInputEvent() {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
-	$(document).one('click', `#${FORM_ID} #${TOKEN_INPUT_ID}`, e => {
+	$(document).one('click', `#${FORM_ID} input[name=${TOKEN_INPUT_NAME}]`, e => {
 		$(e.currentTarget).val('');
 		btnSubmit.removeAttr('disabled');
 	});

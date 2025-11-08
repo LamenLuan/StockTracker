@@ -15,10 +15,8 @@ namespace StockTracker.Controllers
       var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
-      var model = new CloudStorageModel
-      {
-        HasString = settings.MongoConnectionString.HasContent()
-      };
+      var hasString = settings.MongoConnectionString.HasContent();
+      var model = new CloudStorageModel(hasString);
 
       return View(model);
     }

@@ -6,36 +6,9 @@
 
 @{
   ViewData["Title"] = "Cloud Storage";
-  CloudStorageDTO dto;
 }
 
-<form id="@FORM_ID" class="needs-validation" novalidate>
-
-  <div class="form-group col-md-3 mb-3">
-    <label 
-      for="@nameof(dto.MongoConnectionString)" 
-      class="form-label">
-      MongoDB Connection String
-    </label>
-
-    <input name="@nameof(dto.MongoConnectionString)"
-            type="password"
-            class="form-control"
-            id="@nameof(dto.MongoConnectionString)"
-            value="@(Model.HasString ? "some random string" : string.Empty)"
-            required />
-
-    <div class="invalid-feedback"></div>
-  </div>
-
-  <button id="@BTN_SUBMIT_ID"
-    type="submit" 
-    class="btn btn-primary"
-    @(Model.HasString ? "disabled" : string.Empty)>
-    Save 
-  </button>
-
-</form>
+<partial name="Form/_Form" model="Model" />
 
 <div id="@EXPORT_MODAL_ID" class="modal" tabindex="-1">
   <div class="modal-dialog">

@@ -78,7 +78,7 @@ function setModalExportState(awaitingResponse) {
 
 function tokenInputEvent() {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
-	$(document).one('click', `#${FORM_ID} #${TOKEN_INPUT_ID}`, e => {
+	$(document).one('click', `#${FORM_ID} input[name=${TOKEN_INPUT_NAME}]`, e => {
 		$(e.currentTarget).val('');
 		btnSubmit.removeAttr('disabled');
 	});

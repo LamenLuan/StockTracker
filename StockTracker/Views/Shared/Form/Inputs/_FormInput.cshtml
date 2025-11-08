@@ -16,5 +16,9 @@ else if (Model is TimeInputModel)
 {
   <partial name="@FOLDER/_TimeInput" model="Model" />
 }
+else if (Model is PasswordInputModel)
+{
+  <partial name="@FOLDER/_PasswordInput" model="Model" />
+}
 else 
   throw new InvalidOperationException("Unsupported input model type");

@@ -50,7 +50,9 @@ namespace StockTracker.Models
           Name = nameof(settingsDTO.PriceRange),
           Value = settingsDTO.PriceRange?.ToString() ?? string.Empty,
           IsRequired = true,
-          Step = 0.1f
+          Step = 0.1f,
+          Min = 0.1f,
+          Max = 100
         },
         new TimeInputModel
         {

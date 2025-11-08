@@ -13,5 +13,15 @@ namespace StockTracker.Models.Shared.Form
       Id = string.Empty;
       Inputs = [];
     }
+
+    protected FormModel(string buttonId) : this()
+    {
+      FormButtonModel = new FormButtonModel
+      {
+        Id = buttonId,
+        Label = "Save",
+        Disabled = false,
+      };
+    }
   }
 }

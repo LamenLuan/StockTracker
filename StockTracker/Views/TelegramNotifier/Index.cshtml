@@ -6,37 +6,16 @@
 
 @{
   ViewData["Title"] = "Telegram Notifier";
-  TelegramNotifierDTO dto;
 }
 
-<form id="@FORM_ID" class="needs-validation" novalidate>
+<partial name="Form/_Form" model="Model" />
 
-  <div class="form-group col-md-3 mb-3">
-    <label for="@nameof(dto.Token)" class="form-label">Bot Token</label>
-
-    <input name="@nameof(dto.Token)"
-            type="password"
-            class="form-control"
-            id="@nameof(dto.Token)"
-            value="@(Model.HasToken ? "some random token" : string.Empty)"
-            required />
-
-    <div class="invalid-feedback"></div>
-
-    <small id="@HELP_TEXT_ID"
-      class="form-text text-muted blink d-none">
-      Please send a message from your telegram to the bot now
-    </small>
-  </div>
-
-  <button id="@BTN_SUBMIT_ID"
-    type="submit" 
-    class="btn btn-primary"
-    @(Model.HasToken ? "disabled" : string.Empty)>
-    Save 
-  </button>
-
-</form>
+<div class="mt-2">
+  <small id="@HELP_TEXT_ID"
+         class="form-text text-muted blink d-none">
+    Please send a message from your telegram to the bot now
+  </small>
+</div>
 
 @section Scripts {
   <partial name="_Declarings" />

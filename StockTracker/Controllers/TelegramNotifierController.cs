@@ -15,10 +15,8 @@ namespace StockTracker.Controllers
       var settings = await AppDbContext.GetSettings();
       if (settings == null) return Json(ReturnDTO.Error());
 
-      var model = new TelegramNotifierModel
-      {
-        HasToken = settings.HasTelegramConfig()
-      };
+      var hasConfig = settings.HasTelegramConfig();
+      var model = new TelegramNotifierModel(hasConfig);
 
       return View(model);
     }
