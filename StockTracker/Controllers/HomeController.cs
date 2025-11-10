@@ -41,7 +41,7 @@ namespace StockTracker.Controllers
     {
       var url = $"https://brapi.dev/api/quote/PETR4?token={dto.Key}";
       var resultado = _client.GetStringAsync(url).Result;
-      if (resultado == null) return Error();
+      if (string.IsNullOrEmpty(resultado)) return Error();
 
       await AppDbContext.SaveApiKey(dto.Key);
       var returnDto = ReturnDTO.Success(dto.Key);

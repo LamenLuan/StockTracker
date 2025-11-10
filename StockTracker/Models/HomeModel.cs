@@ -1,21 +1,38 @@
-﻿using StockTracker.ViewModels;
+﻿using StockTracker.Models.Shared.Form;
+using StockTracker.Models.Shared.Form.Inputs;
+using StockTracker.ViewModels;
 using StockTrackerConfigurator.Models;
 
 namespace StockTracker.Models
 {
-  public class HomeModel
+  public class HomeModel : FormModel
   {
     public const string API_KEY_FORM_ID = "brapi-key-form";
-    public const string API_KEY_INPUT_ID = "brapi-key-input";
     public const string CARDS_ID = "cards";
 
-    public string BrapiKey { get; set; }
+    public const string API_KEY_INPUT_NAME = "api-key-input";
+
     public List<CreationCardModel> Cards { get; set; }
 
     public HomeModel(List<CreationCardViewModel> cardsViewModel)
     {
-      BrapiKey = string.Empty;
+      Id = API_KEY_FORM_ID;
+      Inputs = CreateInputs();
+      FormButtonModel = null;
       Cards = cardsViewModel.Select(c => new CreationCardModel(c)).ToList();
+    }
+
+    private static InputModel[] CreateInputs()
+    {
+      return
+      [
+        new PasswordInputModel
+        {
+          Label = "Brapi key",
+          Name = API_KEY_INPUT_NAME,
+          IsRequired = true
+        }
+      ];
     }
   }
 }

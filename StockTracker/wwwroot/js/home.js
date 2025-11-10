@@ -1,11 +1,11 @@
 $(() => {
 
-	brapiKeyInputEvent()
-	addCardFormEvents()
-	viewCardRemoveBtnEvent()
+	apiKeyEvents();
+	addCardFormEvents();
+	viewCardRemoveBtnEvent();
 
 	const form = $(`#${API_KEY_FORM_ID}`)
-	const input = form.find(`#${API_KEY_INPUT_ID}`)
+	const input = form.find(`input[name=${API_KEY_INPUT_NAME}]:first`)
 
 	input.prop('disabled', true)
 	$.get({
@@ -22,16 +22,20 @@ $(() => {
 
 //#region Brapi key
 
-function brapiKeyInputEvent() {
+function apiKeyEvents() {
+	apiInputEvent();
+	brapiKeyFormEvent();
+}
+
+function apiInputEvent() {
+	$(document).one('click', `#${API_KEY_FORM_ID} input[name=${API_KEY_INPUT_NAME}]`, e => {
+		$(e.currentTarget).val('');
+	});
+}
+
+function brapiKeyFormEvent() {
 	$(`#${API_KEY_FORM_ID}`).on('submit', function (e) {
 		e.preventDefault()
-
-		if ($(this).data('validKeyInserted')) {
-			const input = $(this).find(`#${API_KEY_INPUT_ID}`)
-			input.val('')
-			$(this).removeData('validKeyInserted')
-			return
-		}
 
 		if (!this.checkValidity()) {
 			this.classList.add('was-validated')
@@ -42,18 +46,18 @@ function brapiKeyInputEvent() {
 }
 
 function validateKey(form) {
-	const input = $(form).find(`#${API_KEY_INPUT_ID}`)
+	const input = $(form).find(`input[name=${API_KEY_INPUT_NAME}]:first`)
 	input.prop('disabled', true)
 
 	$.post({
-		url: `Home/${CHECK_BRAPI_KEY_URL}`,
+		url: `Home/${WRITE_BRAPI_KEY_URL}`,
 		data: getDataToCheckBrapiKeyValid(input),
 		success: function (response) {
 			if (!response.result) {
 				showErrorAlert(response)
 				return
 			}
-			$(form).data('validKeyInserted', true)
+			location.reload();
 		},
 		error: function (response) {
 			if (response.status == 400 || response.status == 401) {
@@ -220,7 +224,7 @@ function viewCardRemoveBtnEvent() {
 
 function validApiKeyNotInserted() {
 	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
-	const apiKeyInput = apiKeyform.find(`#${API_KEY_INPUT_ID}`)
+	const apiKeyInput = apiKeyform.find(`input[name=${API_KEY_INPUT_NAME}]:first`)
 
 	if (!apiKeyform.data('validKeyInserted')) {
 		apiKeyform.removeClass('was-validated')

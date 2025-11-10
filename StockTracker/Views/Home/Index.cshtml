@@ -7,21 +7,7 @@
   ViewData["Title"] = "Home Page";
 }
 
-<div class="col-3 mb-5">
-  <form id="@API_KEY_FORM_ID" class="needs-validation" novalidate>
-    <div>
-      <label for="@API_KEY_INPUT_ID" class="form-label">Brapi Key</label>
-
-      <input name="brapiKey"
-             type="password"
-             class="form-control"
-             id="@API_KEY_INPUT_ID"
-             required />
-
-      <div class="invalid-feedback"></div>
-    </div>
-  </form>
-</div>
+<partial name="Form/_Form" model="Model" />
 
 <div id="@CARDS_ID" class="row m-0">
 
