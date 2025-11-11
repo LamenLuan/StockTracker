@@ -88,6 +88,7 @@ internal class Program
   )
   {
     var priceNow = stocksResults.Results.First().RegularMarketPrice;
+    if (priceNow.Equals(0f)) return false;
 
     if (PriceTriggered(tracked, priceNow))
     {
