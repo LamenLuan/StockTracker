@@ -7,10 +7,6 @@ main {
   padding-right: 3vw;
 }
 
-footer {
-  padding: 1rem 0 1rem 1rem;
-}
-
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -20,6 +16,20 @@ footer {
 html {
   position: relative;
   min-height: 100%;
+}
+
+body {
+  height: 100dvh;
+}
+
+header {
+  min-height: 8%;
+  display:grid;
+}
+
+main {
+  padding-top: 12px;
+  min-height: 84%;
 }
 
 .stock-card {

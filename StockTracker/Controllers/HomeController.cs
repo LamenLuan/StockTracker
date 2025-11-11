@@ -92,7 +92,9 @@ namespace StockTracker.Controllers
     {
       var stock = await AppDbContext.GetStockTrackingAsync(dto.Id);
       if (stock == null) return Json(ReturnDTO.Error());
+
       await AppDbContext.RemoveStockTracking(stock);
+
       return Json(ReturnDTO.Success());
     }
   }
