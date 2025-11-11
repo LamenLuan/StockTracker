@@ -14,15 +14,15 @@ namespace StockTracker.Models
 
     public List<CreationCardModel> Cards { get; set; }
 
-    public HomeModel(List<CreationCardViewModel> cardsViewModel)
+    public HomeModel(List<CreationCardViewModel> cardsViewModel, bool hasKey)
     {
       Id = API_KEY_FORM_ID;
-      Inputs = CreateInputs();
+      Inputs = CreateInputs(hasKey);
       FormButtonModel = null;
-      Cards = cardsViewModel.Select(c => new CreationCardModel(c)).ToList();
+      Cards = [.. cardsViewModel.Select(c => new CreationCardModel(c))];
     }
 
-    private static InputModel[] CreateInputs()
+    private static InputModel[] CreateInputs(bool hasKey)
     {
       return
       [
@@ -30,7 +30,8 @@ namespace StockTracker.Models
         {
           Label = "Brapi key",
           Name = API_KEY_INPUT_NAME,
-          IsRequired = true
+          IsRequired = true,
+          HasContent = hasKey
         }
       ];
     }

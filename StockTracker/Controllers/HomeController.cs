@@ -17,6 +17,10 @@ namespace StockTracker.Controllers
     public async Task<IActionResult> IndexAsync()
     {
       var stockTrackings = await AppDbContext.GetStockTrackingsAsync();
+      var settings = await AppDbContext.GetSettings();
+
+      if (stockTrackings == null || settings == null)
+        return ErrorPage(ReturnDTO.ErrorCannotLoadAppData);
 
       var viewModelList = new List<CreationCardViewModel>
       {
@@ -24,24 +28,19 @@ namespace StockTracker.Controllers
       };
 
       viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
+      var hasKey = settings.ApiKey.HasContent();
 
-      var model = new HomeModel(viewModelList);
+      var model = new HomeModel(viewModelList, hasKey);
       return View(model);
-    }
-
-    public async Task<IActionResult> GetBrapiKey()
-    {
-      var settings = await AppDbContext.GetSettings();
-      if (settings == null) return Error();
-
-      return GetBrapiKey(settings.ApiKey);
     }
 
     public async Task<IActionResult> WriteBrapiKey(BrapiKeyDTO dto)
     {
-      var url = $"https://brapi.dev/api/quote/PETR4?token={dto.Key}";
-      var resultado = _client.GetStringAsync(url).Result;
-      if (string.IsNullOrEmpty(resultado)) return Error();
+      var url = $"https://brapi.dev/api/quote/GOGL34?token={dto.Key}";
+      var resultado = await _client.GetStringAsync(url).GetResultAsync();
+
+      if (string.IsNullOrEmpty(resultado))
+        return Json(ReturnDTO.Error("Please verify your API key and internet connection"));
 
       await AppDbContext.SaveApiKey(dto.Key);
       var returnDto = ReturnDTO.Success(dto.Key);
@@ -52,11 +51,12 @@ namespace StockTracker.Controllers
     public async Task<IActionResult> FindStocks(StockSearchDTO dto)
     {
       var settings = await AppDbContext.GetSettings();
-      if (!settings.ApiKey.HasContent()) return Error();
+      if (settings == null || !settings.ApiKey.HasContent())
+        return Json(ReturnDTO.Error());
 
-      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}&token={settings.ApiKey}";
-      var resultado = _client.GetFromJsonAsync<StockListDTO>(url).Result;
-      if (resultado == null) return Error();
+      var url = $"https://brapi.dev/api/available?search={dto.SearchTerm}";
+      var resultado = await _client.GetFromJsonAsync<StockListDTO>(url).GetResultAsync();
+      if (resultado == null) return Json(ReturnDTO.Error());
 
       return Json(resultado);
     }
@@ -80,36 +80,20 @@ namespace StockTracker.Controllers
       try
       {
         await AppDbContext.AddStockTracking(stockTracking);
-        return Success();
+        return Json(ReturnDTO.Success());
       }
       catch (Exception)
       {
-        return Error();
+        return Json(ReturnDTO.Error());
       }
     }
 
     public async Task<IActionResult> RemoveStockTrack(StockTrackDTO dto)
     {
       var stock = await AppDbContext.GetStockTrackingAsync(dto.Id);
-      if (stock == null) return Error();
+      if (stock == null) return Json(ReturnDTO.Error());
       await AppDbContext.RemoveStockTracking(stock);
-      return Success();
+      return Json(ReturnDTO.Success());
     }
-
-    #region Private methods
-
-    private IActionResult GetBrapiKey(string? brapiKey)
-    {
-      var response = brapiKey.HasContent()
-        ? "Some hidden password"
-        : string.Empty;
-
-      return Json(response);
-    }
-
-    private IActionResult Error() => Json(ReturnDTO.Error());
-    private IActionResult Success() => Json(ReturnDTO.Success());
-
-    #endregion
   }
 }

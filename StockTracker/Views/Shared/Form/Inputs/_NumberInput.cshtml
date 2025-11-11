@@ -12,7 +12,8 @@
          required="@Model.IsRequired.ToString().ToLower()" 
          min="@Model.Min"
          max="@Model.Max"
-         step="@Model.Step"/>
+         step="@Model.Step"
+         @string.Join(" ", Model.Attrs) />
 
   <div class="invalid-feedback"></div>
 </div>

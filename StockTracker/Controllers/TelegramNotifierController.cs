@@ -13,7 +13,7 @@ namespace StockTracker.Controllers
     public async Task<IActionResult> IndexAsync()
     {
       var settings = await AppDbContext.GetSettings();
-      if (settings == null) return Json(ReturnDTO.Error());
+      if (settings == null) return ErrorPage(ReturnDTO.ErrorCannotLoadAppData);
 
       var hasConfig = settings.HasTelegramConfig();
       var model = new TelegramNotifierModel(hasConfig);

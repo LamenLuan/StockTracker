@@ -12,7 +12,7 @@ namespace StockTracker.Controllers
     public async Task<IActionResult> Index()
     {
       var settings = await AppDbContext.GetSettings();
-      if (settings == null) return Json(ReturnDTO.Error());
+      if (settings == null) return ErrorPage(ReturnDTO.ErrorCannotLoadAppData);
 
       var viewModel = new SettingsDTO
       {

@@ -4,8 +4,11 @@ namespace StockTrackerConfigurator.DTOs
 {
   public class ReturnDTO
   {
+    public const string ErrorCannotLoadAppData = "Cannot load application data";
+
     public string Content { get; set; }
     public bool Result { get; set; }
+
 
     public ReturnDTO()
     {

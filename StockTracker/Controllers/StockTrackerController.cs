@@ -1,6 +1,7 @@
 ﻿using Common.DbContexts;
 using Common.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using StockTrackerConfigurator.DTOs;
 
 namespace StockTracker.Controllers
 {
@@ -11,11 +12,17 @@ namespace StockTracker.Controllers
 
     public StockTrackerController(AppDbContext appDbContext)
     {
-      var appSettings = appDbContext.GetSettings().Result;
+      var appSettings = appDbContext.GetSettings().GetResult()
+        ?? throw new Exception(ReturnDTO.ErrorCannotLoadAppData);
 
       _appDbContext = appSettings.MongoConnectionString.HasContent()
         ? InsantiateMongoDbContext(appSettings.MongoConnectionString!)
         : appDbContext;
+    }
+
+    protected IActionResult ErrorPage(string? message = null)
+    {
+      return Json(ReturnDTO.Error(message));
     }
 
     private static MongoDbContext InsantiateMongoDbContext(string connectionString)

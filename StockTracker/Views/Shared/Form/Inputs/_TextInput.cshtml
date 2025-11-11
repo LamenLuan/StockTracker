@@ -9,7 +9,8 @@
          type="text"
          class="form-control"
          value="@Model.Value"
-         required="@Model.IsRequired.ToString().ToLower()" />
+         required="@Model.IsRequired.ToString().ToLower()"
+         @string.Join(" ", Model.Attrs)/>
 
   <div class="invalid-feedback"></div>
 </div>

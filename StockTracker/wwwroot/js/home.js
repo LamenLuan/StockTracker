@@ -4,20 +4,9 @@ $(() => {
 	addCardFormEvents();
 	viewCardRemoveBtnEvent();
 
-	const form = $(`#${API_KEY_FORM_ID}`)
-	const input = form.find(`input[name=${API_KEY_INPUT_NAME}]:first`)
-
-	input.prop('disabled', true)
-	$.get({
-		url: `Home/${GET_BRAPI_KEY_URL}`,
-		success: function (response) {
-			if (response) {
-				form.data('validKeyInserted', true)
-				input.val(response)
-			}
-		},
-		complete: () => input.removeAttr('disabled')
-	})
+	const form = $(`#${API_KEY_FORM_ID}`);
+	const input = form.find(`input[name=${API_KEY_INPUT_NAME}]:first`);
+	form.data('validKeyInserted', !!input.val());
 })
 
 //#region Brapi key
