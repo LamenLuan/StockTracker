@@ -26,6 +26,7 @@ internal class Program
     if (CantRunTracker()) return;
 
     await LoadAppResources();
+    Notifier.Notify("Program initialized");
     WaitUntilStartTime();
 
     while (true)
