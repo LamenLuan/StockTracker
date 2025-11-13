@@ -18,7 +18,6 @@ Currently, stock prices are retrieved using the free API [brapi](https://brapi.d
 ## How to install it
 
 1. Register an account on [brapi](https://brapi.dev) to generate your own API key;
-
 1. Run "StockTracker.exe" to open the web app and inform your API key in it;
 
 ### How to link a Telegram bot (optional)
