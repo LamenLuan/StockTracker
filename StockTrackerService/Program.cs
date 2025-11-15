@@ -52,11 +52,11 @@ internal class Program
     var connectionTries = 0;
     var apiCommunicated = true;
     await ReadStockTrackingsAsync();
+    var trackingsToNotify = StocksTracked.Where(s => !s.NotificationMuted).ToList();
 
-    for (int i = 0; i < StocksTracked.Count; i++)
+    for (int i = 0; i < trackingsToNotify.Count; i++)
     {
-      var tracked = StocksTracked[i];
-
+      var tracked = trackingsToNotify[i];
       var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={_settings.ApiKey}";
       string? response;
 
@@ -77,27 +77,25 @@ internal class Program
       if (string.IsNullOrEmpty(response)) continue;
 
       var stockResults = response.Deserialize<StocksResults>();
-
       if (stockResults == null) continue;
-      if (StockTriggered(stockResults, tracked)) i--;
+
+      CheckIfStockTriggered(stockResults, tracked);
     }
   }
 
-  private static bool StockTriggered(
+  private static void CheckIfStockTriggered(
     StocksResults stocksResults,
     StockTracking tracked
   )
   {
     var priceNow = stocksResults.Results.First().RegularMarketPrice;
-    if (priceNow.Equals(0f)) return false;
+    if (priceNow.Equals(0f)) return;
 
     if (PriceTriggered(tracked, priceNow))
     {
       var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksTriggered.Add(stockTriggered);
-      StocksTracked.Remove(tracked);
-
-      return true;
+      return;
     }
 
     if (PriceTriggered(tracked, priceNow, _settings.PriceRange))
@@ -105,8 +103,6 @@ internal class Program
       var stockTriggered = new StockTriggered(tracked, priceNow);
       StocksNearTrigger.Add(stockTriggered);
     }
-
-    return false;
   }
 
   private static bool IsMarketClosedDay()

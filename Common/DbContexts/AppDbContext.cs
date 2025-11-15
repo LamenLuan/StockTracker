@@ -68,6 +68,12 @@ namespace Common.DbContexts
       await SaveChangesAsync();
     }
 
+    public virtual async Task ChangeMuteOptionStockTracking(StockTracking stockTracking)
+    {
+      stockTracking.NotificationMuted = !stockTracking.NotificationMuted;
+      await SaveChangesAsync();
+    }
+
     public virtual async Task SaveApiKey(string apiKey)
     {
       var settings = await GetSettings();

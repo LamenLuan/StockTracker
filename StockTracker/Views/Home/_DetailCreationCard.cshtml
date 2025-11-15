@@ -5,79 +5,97 @@
 @model CreationCardModel;
 
 @{
-  var triggerPrice = Model.CardInfo.Buying 
-    ? Model.CardInfo?.Price * (1 - (Model.CardInfo?.TriggerPercentage / 100))
-    : Model.CardInfo?.Price * (1 + (Model.CardInfo?.TriggerPercentage / 100));
+  StockTrackDTO? cardInfo = Model.CardInfo;
+
+  var triggerPrice = 0f;
+  if(cardInfo != null)
+  {
+    triggerPrice = cardInfo.Buying
+     ? cardInfo.Price * (1 - (cardInfo.TriggerPercentage / 100))
+     : cardInfo.Price * (1 + (cardInfo.TriggerPercentage / 100));
+  }
 }
 
-<div class="col-2 stock-card detail-card">
-  <div>
+@if(cardInfo != null) {
+  <div class="col-2 stock-card detail-card">
+    <div>
 
-    <div class="stock-card-border border rounded">
+      <div class="stock-card-border border rounded">
 
-      <form class="needs-validation p-3"
-            novalidate>
+        <form class="needs-validation p-3"
+              novalidate>
 
-        <div class="form-group">
-          <input name="@nameof(StockTrackDTO.StockName)"
-                 value="@Model.CardInfo?.StockName"
-                 type="text"
-                 class="form-control"
-                 disabled>
-        </div>
+          <div class="input-group mb-3">
 
-        <hr />
+            <input name="@nameof(StockTrackDTO.StockName)"
+                   value="@cardInfo.StockName"
+                   type="text"
+                   class="form-control"
+                   disabled>
 
-        <input type="hidden"
-               name="@nameof(StockTrackDTO.Buying)"
-               value="@Model.CardInfo?.Buying.ToString().ToLower()" />
+            <button name="@nameof(StockTrackDTO.NotificationMuted)"
+                    class="btn @(cardInfo.NotificationMuted ? "btn-secondary" : "btn-outline-secondary")"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    title="@(cardInfo.NotificationMuted ? "Unmute notification" : "Mute notification")">
+              <i class="fa-solid @(cardInfo.NotificationMuted ? "fa-bell" : "fa-bell-slash")"></i>
+            </button>
 
-        <input type="hidden"
-               name="@nameof(StockTrackDTO.Id)"
-               value="@Model.CardInfo?.Id" />
+          </div>
 
-        <div class="input-group mb-3">
-          <button type="button" class="w-100 btn btn-outline-@(Model.CardInfo.Buying ? "danger" : "success")" disabled>
-            @(Model.CardInfo.Buying ? "Buying" : "Selling")
-          </button>
-        </div>
+          <hr />
 
-        <div class="form-group mb-3">
-          <label for="price">Price</label>
-          <input value="@(Model.CardInfo != null ? $"R$ {Model.CardInfo.Price.ToString("N2", CultureInfo.CurrentCulture)}" : string.Empty)"
-                 type="text"
-                 class="form-control"
-                 disabled>
-        </div>
+          <input type="hidden"
+                 name="@nameof(StockTrackDTO.Buying)"
+                 value="@cardInfo.Buying.ToString().ToLower()" />
 
-        <div class="input-group mb-3">
+          <input type="hidden"
+                 name="@nameof(StockTrackDTO.Id)"
+                 value="@cardInfo.Id" />
 
-          <label class="col-12" for="percentage">Triggers in (%)</label>
+          <div class="input-group mb-3">
+            <button type="button" class="w-100 btn btn-outline-@(cardInfo.Buying ? "danger" : "success")" disabled>
+              @(cardInfo.Buying ? "Buying" : "Selling")
+            </button>
+          </div>
 
-          <div class="input-group-prepend w-50">
-            <input value="@Model.CardInfo?.TriggerPercentage"
+          <div class="form-group mb-3">
+            <label for="price">Price</label>
+            <input value="@($"R$ {cardInfo.Price.ToString("N2", CultureInfo.CurrentCulture)}")"
                    type="text"
                    class="form-control"
                    disabled>
           </div>
 
-          <input value="@(triggerPrice.HasValue ? $"R$ {triggerPrice.Value.ToString("N2", CultureInfo.CurrentCulture)}" : string.Empty)"
-                 type="text"
-                 class="form-control"
-                 disabled>
+          <div class="input-group mb-3">
 
-        </div>
+            <label class="col-12" for="percentage">Triggers in (%)</label>
 
-        <div class="input-group">
-          <button type="button"
-                  class="btn @CreationCardModel.CARD_REMOVE_BTN btn-danger btn-remove">
-            Remove
-          </button>
-        </div>
+            <div class="input-group-prepend w-50">
+              <input value="@cardInfo.TriggerPercentage"
+                     type="text"
+                     class="form-control"
+                     disabled>
+            </div>
 
-      </form>
+            <input value="@($"R$ {triggerPrice.ToString("N2", CultureInfo.CurrentCulture)}")"
+                   type="text"
+                   class="form-control"
+                   disabled>
+
+          </div>
+
+          <div class="input-group">
+            <button type="button"
+                    class="btn @CreationCardModel.CARD_REMOVE_BTN btn-danger btn-remove">
+              Remove
+            </button>
+          </div>
+
+        </form>
+
+      </div>
 
     </div>
-
   </div>
-</div>
+}

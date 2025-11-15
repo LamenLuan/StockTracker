@@ -97,5 +97,15 @@ namespace StockTracker.Controllers
 
       return Json(ReturnDTO.Success());
     }
+
+    public async Task<IActionResult> ChangeMuteOptionStockTrack(long id)
+    {
+      var stock = await AppDbContext.GetStockTrackingAsync(id);
+      if (stock == null) return Json(ReturnDTO.Error());
+
+      await AppDbContext.ChangeMuteOptionStockTracking(stock);
+
+      return Json(ReturnDTO.Success());
+    }
   }
 }

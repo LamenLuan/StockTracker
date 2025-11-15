@@ -8,6 +8,7 @@ namespace Common.Types
     public long Id { get; set; }
     public float TriggerPercentage { get; set; }
     public bool TrackingToBuy { get; set; }
+    public bool NotificationMuted { get; set; }
 
     public float PriceTrigger => TrackingToBuy
       ? RegularMarketPrice * (1 - TriggerPercentage / 100)
@@ -21,12 +22,13 @@ namespace Common.Types
              Id == tracking.Id &&
              TriggerPercentage == tracking.TriggerPercentage &&
              TrackingToBuy == tracking.TrackingToBuy &&
+             NotificationMuted == tracking.NotificationMuted &&
              PriceTrigger == tracking.PriceTrigger;
     }
 
     public override int GetHashCode()
     {
-      return HashCode.Combine(Symbol, RegularMarketPrice, Id, TriggerPercentage, TrackingToBuy, PriceTrigger);
+      return HashCode.Combine(Symbol, RegularMarketPrice, Id, TriggerPercentage, TrackingToBuy, NotificationMuted, PriceTrigger);
     }
   }
 }

@@ -17,6 +17,7 @@ namespace StockTrackerConfigurator.Models
     public const string CARD_BTN_CLASS = "card-btn";
 
     public const string CARD_REMOVE_BTN = "remove-btn";
+    public const string CARD_MUTE_BTN = "mute-btn";
     public const string CARD_EDIT_BTN = "edit-btn";
 
     public CardType CardType { get; set; }

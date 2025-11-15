@@ -7,6 +7,7 @@
     public float Price { get; set; }
     public float TriggerPercentage { get; set; }
     public bool Buying { get; set; }
+    public bool NotificationMuted { get; set; }
 
     public StockTrackDTO()
     {

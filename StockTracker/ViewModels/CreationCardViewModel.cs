@@ -25,7 +25,8 @@ namespace StockTracker.ViewModels
         Buying = stock.TrackingToBuy,
         Price = stock.RegularMarketPrice,
         StockName = stock.Symbol,
-        TriggerPercentage = stock.TriggerPercentage
+        TriggerPercentage = stock.TriggerPercentage,
+        NotificationMuted = stock.NotificationMuted
       };
       CardType = CardType.DETAIL;
     }

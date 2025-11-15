@@ -2,7 +2,7 @@ $(() => {
 
 	apiKeyEvents();
 	addCardFormEvents();
-	viewCardRemoveBtnEvent();
+	viewCardEvents();
 
 	const form = $(`#${API_KEY_FORM_ID}`);
 	const input = form.find(`input[name=${API_KEY_INPUT_NAME}]:first`);
@@ -187,6 +187,32 @@ function cardButtonEvent() {
 //#endregion
 
 //#region View card
+
+function viewCardEvents() {
+	viewCardMuteNotificationBtnEvent();
+	viewCardRemoveBtnEvent();
+}
+
+function viewCardMuteNotificationBtnEvent() {
+	$(document).on('click', `button[name=${MUTE_BTN_NAME}]`, (e) => {
+		if (validApiKeyNotInserted()) return
+
+		const btn = $(e.currentTarget)
+		const form = btn.closest('form')
+		$.post({
+			url: `Home/${CHANGE_MUTE_OPTION_TRACK_URL}`,
+			data: serializeObject(form, true),
+			success: (response) => {
+				if (!response.result) {
+					showErrorAlert(response)
+					return
+				}
+				location.reload()
+			},
+			error: (response) => showErrorAlert(response)
+		})
+	});
+}
 
 function viewCardRemoveBtnEvent() {
 	$(document).on('click', `.${CARD_REMOVE_CLASS}`, (e) => {

@@ -35,6 +35,12 @@ namespace Common.DbContexts
       await _stockTrackingCollection.DeleteOneAsync(s => s.Id == stockTracking.Id);
     }
 
+    public override async Task ChangeMuteOptionStockTracking(StockTracking stockTracking)
+    {
+      await base.ChangeMuteOptionStockTracking(stockTracking);
+      await _stockTrackingCollection.ReplaceOneAsync(s => s.Id == stockTracking.Id, stockTracking);
+    }
+
     private new async Task<List<StockTracking>> GetStockTrackingsAsync()
     {
       return await _stockTrackingCollection.Find(t => true)
