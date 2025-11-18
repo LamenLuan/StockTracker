@@ -1,17 +1,12 @@
 ﻿@using StockTracker.Models.Shared.Form.Inputs
 @model TimeInputModel
 
-<div class="form-group col-md-3 mb-3">
-
-  <partial name="Form/Inputs/_InputLabel" model="Model.Label" />
-
-  <input name="@Model.Name"
-         type="time"
-         class="form-control"
-         value="@Model.Value"
-         step="1"
-         required="@Model.IsRequired.ToString().ToLower()"
-         @string.Join(" ", Model.Attrs)/>
-
-  <div class="invalid-feedback"></div>
-</div>
+<input 
+  name="@Model.Name"
+  type="time"
+  class="form-control"
+  value="@Model.Value"
+  step="1"
+  required="@Model.IsRequired.ToString().ToLower()"
+  @string.Join(" ", Model.Attrs)
+/>

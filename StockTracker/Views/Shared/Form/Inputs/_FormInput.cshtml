@@ -4,21 +4,38 @@
   const string FOLDER = "Form/Inputs";
 }
 
-@if(Model is TextInputModel)
-{
-  <partial name="@FOLDER/_TextInput" model="Model" />
-}
-else if(Model is NumberInputModel)
-{
-  <partial name="@FOLDER/_NumberInput" model="Model" />
-}
-else if (Model is TimeInputModel)
-{
-  <partial name="@FOLDER/_TimeInput" model="Model" />
-}
-else if (Model is PasswordInputModel)
-{
-  <partial name="@FOLDER/_PasswordInput" model="Model" />
-}
-else 
-  throw new InvalidOperationException("Unsupported input model type");
+<div class="form-group col-md-3 mb-3">
+
+  <partial name="Form/Inputs/_InputLabel" model="Model.Label" />
+
+  <div class="input-load-wrap">
+
+    <div class="w-100">
+
+      @if (Model is TextInputModel)
+      {
+        <partial name="@FOLDER/_TextInput" model="Model" />
+      }
+      else if (Model is NumberInputModel)
+      {
+        <partial name="@FOLDER/_NumberInput" model="Model" />
+      }
+      else if (Model is TimeInputModel)
+      {
+        <partial name="@FOLDER/_TimeInput" model="Model" />
+      }
+      else if (Model is PasswordInputModel)
+      {
+        <partial name="@FOLDER/_PasswordInput" model="Model" />
+      }
+      else
+        throw new InvalidOperationException("Unsupported input model type");
+
+      <div class="invalid-feedback"></div>
+    </div>
+
+    <i class="input-load fa-solid fa-circle-notch fa-spin"></i>
+
+  </div>
+
+</div>

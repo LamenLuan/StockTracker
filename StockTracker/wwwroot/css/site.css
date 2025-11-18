@@ -87,6 +87,27 @@ main {
   }
 }
 
+/* Input load */
+
+.input-load-wrap {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.input-load {
+  margin-right: 12px;
+  position: absolute;
+}
+
+.input-load:not(.loading),
+.was-validated .input-load-wrap:has(.form-control:invalid) .input-load,
+.input-load-wrap:has(.input-load.loading) input[type=time]::-webkit-calendar-picker-indicator
+{
+  display: none;
+}
+
 /* Button Group */
 .btn-group {
   width: 100%;
