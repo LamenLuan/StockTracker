@@ -101,11 +101,20 @@ main {
   position: absolute;
 }
 
-.input-load:not(.loading),
+.input-load-wrap:has(.form-control:not(.loading)) .input-load,
 .was-validated .input-load-wrap:has(.form-control:invalid) .input-load,
-.input-load-wrap:has(.input-load.loading) input[type=time]::-webkit-calendar-picker-indicator
-{
+.input-load-wrap:has(.input-load.loading) input[type=time]::-webkit-calendar-picker-indicator {
   display: none;
+}
+
+/* Button load */
+
+button:not(.loading) .loading-action {
+  display: none;
+}
+
+button:has(.loading-action).loading span {
+  font-size: 0;
 }
 
 /* Button Group */

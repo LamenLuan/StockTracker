@@ -64,3 +64,8 @@ function areaPath() {
 		? '_/Home'
 		: path.slice(0, -1) + path.at(-1).replace('/', '');
 }
+
+$.fn.setInputAsLoading = function (loading) {
+	$(this).prop('disabled', loading)
+		.toggleClass('loading', loading);
+};
