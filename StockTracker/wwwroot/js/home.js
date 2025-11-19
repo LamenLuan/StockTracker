@@ -36,7 +36,7 @@ function brapiKeyFormEvent() {
 
 function validateKey(form) {
 	const input = $(form).find(`input[name=${API_KEY_INPUT_NAME}]:first`)
-	input.prop('disabled', true)
+	input.setInputAsLoading(true);
 
 	$.post({
 		url: `Home/${WRITE_BRAPI_KEY_URL}`,
@@ -55,7 +55,7 @@ function validateKey(form) {
 				input.removeClass('is-valid').addClass('is-invalid')
 			}
 		},
-		complete: () => input.removeAttr('disabled')
+		complete: () => input.setInputAsLoading(false)
 	})
 }
 
@@ -74,7 +74,7 @@ function addCardFormEvents() {
 	stockNameSelectEvent()
 	priceInputEvent()
 	operationBtnsEvent()
-	cardButtonEvent()
+	createTrackBtnEvent()
 	percentageInputEvent()
 }
 
@@ -156,17 +156,17 @@ function updatePctgResult() {
 	}
 }
 
-function cardButtonEvent() {
+function createTrackBtnEvent() {
 	$(document).on('click', `.${CARD_BTN_CLASS}`, function () {
 		const form = $(`#${FORM_ID}`)
-		const btns = $(`.${CARD_BTN_CLASS}`)
+		const btns = form.find(`.${CARD_BTN_CLASS}:first`)
 
 		if (!form[0].checkValidity()) {
 			form.addClass('was-validated')
 			return
 		}
 
-		btns.prop('disabled', true)
+		btns.setInputAsLoading(true);
 
 		$.post({
 			url: `Home/${CREATE_STOCK_TRACK_URL}`,
@@ -176,12 +176,12 @@ function cardButtonEvent() {
 					showErrorAlert(response)
 					return
 				}
-				location.reload()
+				location.reload();
 			},
 			error: (response) => showErrorAlert(response),
-			complete: () => btns.removeAttr('disabled')
+			complete: () => btns.setInputAsLoading(false)
 		})
-	})
+	});
 }
 
 //#endregion
@@ -220,6 +220,9 @@ function viewCardRemoveBtnEvent() {
 
 		const btn = $(e.currentTarget)
 		const form = btn.closest('form')
+
+		btn.setInputAsLoading(true);
+
 		$.post({
 			url: `Home/${REMOVE_STOCK_TRACK_URL}`,
 			data: serializeObject(form, true),
@@ -230,7 +233,10 @@ function viewCardRemoveBtnEvent() {
 				}
 				location.reload()
 			},
-			error: (response) => showErrorAlert(response)
+			error: response => {
+				showErrorAlert(response);
+				btn.setInputAsLoading(false);
+			}
 		})
 	})
 }
@@ -240,6 +246,8 @@ function viewCardRemoveBtnEvent() {
 function validApiKeyNotInserted() {
 	const apiKeyform = $(`#${API_KEY_FORM_ID}`)
 	const apiKeyInput = apiKeyform.find(`input[name=${API_KEY_INPUT_NAME}]:first`)
+
+	if (apiKeyInput.prop('disabled')) return true;
 
 	if (!apiKeyform.data('validKeyInserted')) {
 		apiKeyform.removeClass('was-validated')

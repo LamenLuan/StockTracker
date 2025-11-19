@@ -38,7 +38,7 @@ namespace StockTracker.Controllers
       }
     }
 
-    public async Task<ReturnDTO> SetTelegramInfo(TelegramBotClient client)
+    private async Task<ReturnDTO> SetTelegramInfo(TelegramBotClient client)
     {
       for (int i = 0; i < 10; i++)
       {

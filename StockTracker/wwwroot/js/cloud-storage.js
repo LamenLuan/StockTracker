@@ -29,7 +29,7 @@ function submitBtnEvent(form) {
 			data: form.serialize(),
 			success: response => {
 				if (!response.result) {
-					showErrorAlert(response)
+					submitBtnEventErrorHandler(response)
 					return
 				}
 
@@ -44,12 +44,14 @@ function submitBtnEvent(form) {
 					onCompleteHandler: () => setFormState(false)
 				});
 			},
-			error: response => {
-				showErrorAlert(response);
-				setFormState(false);
-			}
+			error: submitBtnEventErrorHandler
 		})
 	})
+}
+
+function submitBtnEventErrorHandler(response) {
+	showErrorAlert(response);
+	setFormState(false);
 }
 
 function exportDataBtnEvent(form) {
@@ -110,5 +112,5 @@ function getSaveDataForm(form, overwriteLocalData) {
 
 function setFormState(awaitingResponse) {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
-	btnSubmit.prop('disabled', awaitingResponse);
+	btnSubmit.setInputAsLoading(awaitingResponse);
 }

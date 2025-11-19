@@ -35,7 +35,7 @@ namespace StockTracker.Controllers
       }
       catch (Exception)
       {
-        var msg = "Cannot connect to the clould storage. Please check your connection";
+        var msg = "Cannot connect to the cloud storage. Please check your connection";
         throw new Exception(msg);
       }
     }

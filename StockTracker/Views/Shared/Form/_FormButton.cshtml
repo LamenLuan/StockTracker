@@ -8,6 +8,7 @@
     type="submit"
     class="btn btn-primary"
     @(Model.Disabled ? "disabled" : string.Empty)>
-    Save
+    <span>@Model.Label</span>
+    <i class="loading-action fa-solid fa-circle-notch fa-spin"></i>
   </button>
 }

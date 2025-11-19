@@ -10,6 +10,9 @@ namespace StockTracker.Controllers
   public class CloudStorageController(AppDbContext appDbContext)
     : StockTrackerController(appDbContext)
   {
+    private const string MONGO_CONNECTION_ERROR
+      = "Cannot connect to the cloud storage. Please check your string and connection";
+
     public async Task<IActionResult> Index()
     {
       var settings = await AppDbContext.GetSettings();
@@ -32,7 +35,10 @@ namespace StockTracker.Controllers
       if (dto.MongoConnectionString.Equals(localSettings.MongoConnectionString))
         return Json(ReturnDTO.Error("The connection string is the same as the current one"));
 
-      var mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
+      var mongoDbContext = CreateMongoDbContext(dto.MongoConnectionString);
+      if (mongoDbContext == null)
+        return Json(ReturnDTO.Error(MONGO_CONNECTION_ERROR));
+
       var dataDifference = await mongoDbContext.CheckDataDifference();
 
       return Json(ReturnDTO.Success(dataDifference));
@@ -56,12 +62,27 @@ namespace StockTracker.Controllers
       }
 
       if (AppDbContext is not MongoDbContext mongoDbContext)
-        mongoDbContext = new MongoDbContext(dto.MongoConnectionString);
+      {
+        mongoDbContext = CreateMongoDbContext(dto.MongoConnectionString)!;
+        if (mongoDbContext == null) return Json(ReturnDTO.Error(MONGO_CONNECTION_ERROR));
+      }
 
       await mongoDbContext.MergeData(dto.OverwriteLocalData.Value);
       await mongoDbContext.SaveMongoConnectionString(dto.MongoConnectionString);
 
       return Json(ReturnDTO.Success());
+    }
+
+    private static MongoDbContext? CreateMongoDbContext(string connectionString)
+    {
+      try
+      {
+        return new MongoDbContext(connectionString);
+      }
+      catch (Exception)
+      {
+        return null;
+      }
     }
   }
 }

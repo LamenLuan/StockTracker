@@ -38,7 +38,7 @@ function submitBtnEvent() {
 function setFormState(awaitingResponse) {
 	const btnSubmit = $(`#${BTN_SUBMIT_ID}`);
 	const helpText = $(`#${HELP_TEXT_ID}`);
-	btnSubmit.prop('disabled', awaitingResponse);
+	btnSubmit.setInputAsLoading(awaitingResponse);
 	helpText.toggleClass('d-none', !awaitingResponse);
 }
 
