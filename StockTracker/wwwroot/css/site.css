@@ -117,6 +117,10 @@ button:has(.loading-action).loading span {
   font-size: 0;
 }
 
+button.loading i:not(.loading-action) {
+  display: none;
+}
+
 /* Button Group */
 .btn-group {
   width: 100%;

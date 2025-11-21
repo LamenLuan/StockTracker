@@ -195,10 +195,12 @@ function viewCardEvents() {
 
 function viewCardMuteNotificationBtnEvent() {
 	$(document).on('click', `button[name=${MUTE_BTN_NAME}]`, (e) => {
-		if (validApiKeyNotInserted()) return
+		if (validApiKeyNotInserted()) return;
 
-		const btn = $(e.currentTarget)
-		const form = btn.closest('form')
+		const btn = $(e.currentTarget);
+		const form = btn.closest('form');
+		btn.setInputAsLoading(true);
+
 		$.post({
 			url: `Home/${CHANGE_MUTE_OPTION_TRACK_URL}`,
 			data: serializeObject(form, true),
@@ -209,7 +211,8 @@ function viewCardMuteNotificationBtnEvent() {
 				}
 				location.reload()
 			},
-			error: (response) => showErrorAlert(response)
+			error: (response) => showErrorAlert(response),
+			complete: () => btn.setInputAsLoading(false)
 		})
 	});
 }
