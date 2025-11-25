@@ -6,7 +6,7 @@
 
     public StockListDTO()
     {
-      Stocks = new string[0];
+      Stocks = [];
     }
   }
 }

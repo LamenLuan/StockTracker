@@ -81,45 +81,31 @@ function addCardFormEvents() {
 function addCardButtonEvent() {
 	const cards = $(`#${CARDS_ID}`)
 
-	$(document).on('click', `#${ADD_CARD_ID}`, e => {
-		if (validApiKeyNotInserted()) return
+	$(document).on('click', `#${ADD_CARD_ID}:not([disabled])`, e => {
+		if (validApiKeyNotInserted()) return;
+		const card = $(e.currentTarget).attr('disabled', true);
 
 		$.get({
 			url: `Home/${CREATE_CARD_URL}`,
 			success: function (response) {
 				if (response.result == false) {
-					return
+					showErrorAlert(response);
+					return;
 				}
-				$(e.currentTarget).closest('.stock-card').remove()
-				const card = $(response)
-				cards.prepend(card)
-				configCardSelect(card)
-			}
-		})
-	})
-}
-
-function configCardSelect(card) {
-	card.find(`#${STOCK_INPUT_ID}`).select2({
-		ajax: {
-			url: `Home/${FIND_STOCK_URL}`,
-			data: a => {
-				const data = {}
-				data[SEARCH_TERM_PROP] = a.term
-				return data
+				card.closest('.stock-card').remove()
+				const inputCard = $(response)
+				cards.prepend(inputCard)
+				inputCard.find(`#${STOCK_INPUT_ID}`).select2()
 			},
-			processResults: response => {
-				return {
-					results: response.stocks.map(text => ({ id: text, text }))
-				}
-			}
-		}
+			error: response => showErrorAlert(response),
+			complete: () => card.removeAttr('disabled')
+		})
 	})
 }
 
 function stockNameSelectEvent() {
 	$(document).on('select2:select', `#${STOCK_INPUT_ID}`, function () {
-		$(`#${PRICE_INPUT_ID}`).trigger("focus")
+		$(`#${PRICE_INPUT_ID}`).trigger("focus");
 	})
 }
 

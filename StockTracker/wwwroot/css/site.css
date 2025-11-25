@@ -54,6 +54,10 @@ main {
   cursor: pointer;
 }
 
+#add-card[disabled] {
+  background-color: darkgray;
+}
+
 #add-card:hover {
   background-color: darkgray;
   transition: 0.6s;

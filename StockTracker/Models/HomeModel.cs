@@ -1,7 +1,7 @@
-﻿using StockTracker.Models.Shared.Form;
+﻿using Common.Types;
+using StockTracker.Models.Shared.Form;
 using StockTracker.Models.Shared.Form.Inputs;
 using StockTracker.ViewModels;
-using StockTrackerConfigurator.Models;
 
 namespace StockTracker.Models
 {
@@ -14,12 +14,25 @@ namespace StockTracker.Models
 
     public List<CreationCardModel> Cards { get; set; }
 
-    public HomeModel(List<CreationCardViewModel> cardsViewModel, bool hasKey)
+    public HomeModel(List<StockTracking> stockTrackings, bool hasKey)
     {
       Id = API_KEY_FORM_ID;
       Inputs = CreateInputs(hasKey);
       FormButtonModel = null;
-      Cards = [.. cardsViewModel.Select(c => new CreationCardModel(c))];
+      Cards = CreateCards(stockTrackings);
+    }
+
+    private static List<CreationCardModel> CreateCards(
+      List<StockTracking> stockTrackings)
+    {
+      var viewModelList = new List<CreationCardViewModel>
+      {
+        CreationCardViewModel.AddCardButton
+      };
+
+      viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
+
+      return [.. viewModelList.Select(c => new CreationCardModel(c))];
     }
 
     private static InputModel[] CreateInputs(bool hasKey)

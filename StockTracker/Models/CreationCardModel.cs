@@ -2,7 +2,7 @@
 using StockTrackerConfigurator.DTOs;
 using StockTrackerConfigurator.Types;
 
-namespace StockTrackerConfigurator.Models
+namespace StockTracker.Models
 {
   public class CreationCardModel
   {
@@ -20,12 +20,14 @@ namespace StockTrackerConfigurator.Models
     public const string CARD_MUTE_BTN = "mute-btn";
     public const string CARD_EDIT_BTN = "edit-btn";
 
-    public CardType CardType { get; set; }
+    public CardType Type { get; set; }
     public StockTrackDTO? CardInfo { get; set; }
+
+    protected CreationCardModel() { }
 
     public CreationCardModel(CreationCardViewModel viewModel)
     {
-      CardType = viewModel.CardType;
+      Type = viewModel.CardType;
       CardInfo = viewModel.CardInfo;
     }
   }

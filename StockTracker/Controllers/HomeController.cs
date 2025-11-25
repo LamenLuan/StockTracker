@@ -3,9 +3,7 @@ using Common.Extensions;
 using Common.Types;
 using Microsoft.AspNetCore.Mvc;
 using StockTracker.Models;
-using StockTracker.ViewModels;
 using StockTrackerConfigurator.DTOs;
-using StockTrackerConfigurator.Models;
 
 namespace StockTracker.Controllers
 {
@@ -22,21 +20,15 @@ namespace StockTracker.Controllers
       if (stockTrackings == null || settings == null)
         return ErrorPage(ReturnDTO.ErrorCannotLoadAppData);
 
-      var viewModelList = new List<CreationCardViewModel>
-      {
-        CreationCardViewModel.AddCardButton
-      };
-
-      viewModelList.AddRange(stockTrackings.Select(s => new CreationCardViewModel(s)));
       var hasKey = settings.ApiKey.HasContent();
+      var model = new HomeModel(stockTrackings, hasKey);
 
-      var model = new HomeModel(viewModelList, hasKey);
       return View(model);
     }
 
     public async Task<IActionResult> WriteBrapiKey(BrapiKeyDTO dto)
     {
-      var url = $"https://brapi.dev/api/quote/GOGL34?token={dto.Key}";
+      var url = $"https://brapi.dev/api/quote/GOGLv34?token={dto.Key}";
       var resultado = await _client.GetStringAsync(url).GetResultAsync();
 
       if (string.IsNullOrEmpty(resultado))
@@ -61,9 +53,15 @@ namespace StockTracker.Controllers
       return Json(resultado);
     }
 
-    public IActionResult CreateCardView()
+    public async Task<IActionResult> CreateCardView()
     {
-      var model = new CreationCardModel(CreationCardViewModel.CardForm);
+      var url = $"https://brapi.dev/api/available";
+      var stockList = await _client.GetFromJsonAsync<StockListDTO>(url).GetResultAsync();
+      if (stockList == null) return Json(ReturnDTO.Error());
+
+      var stocks = stockList.Stocks.OrderBy(s => s).ToArray();
+      var model = new FormCreationCardModel(stocks);
+
       return PartialView("_FormCreationCard", model);
     }
 
