@@ -81,9 +81,9 @@ function addCardFormEvents() {
 function addCardButtonEvent() {
 	const cards = $(`#${CARDS_ID}`)
 
-	$(document).on('click', `#${ADD_CARD_ID}:not([disabled])`, e => {
+	$(document).on('click', `#${ADD_CARD_ID}:not(.loading)`, e => {
 		if (validApiKeyNotInserted()) return;
-		const card = $(e.currentTarget).attr('disabled', true);
+		const card = $(e.currentTarget).setInputAsLoading(true);
 
 		$.get({
 			url: `Home/${CREATE_CARD_URL}`,
@@ -98,7 +98,7 @@ function addCardButtonEvent() {
 				inputCard.find(`#${STOCK_INPUT_ID}`).select2()
 			},
 			error: response => showErrorAlert(response),
-			complete: () => card.removeAttr('disabled')
+			complete: () => card.setInputAsLoading(false)
 		})
 	})
 }

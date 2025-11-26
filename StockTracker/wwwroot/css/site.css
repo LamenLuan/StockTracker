@@ -54,7 +54,7 @@ main {
   cursor: pointer;
 }
 
-#add-card[disabled] {
+#add-card.loading {
   background-color: darkgray;
 }
 
@@ -113,16 +113,16 @@ main {
 
 /* Button load */
 
-button:not(.loading) .loading-action {
+button:not(.loading) .loading-action,
+.button:not(.loading) .loading-action,
+button.loading i:not(.loading-action),
+.button.loading i:not(.loading-action) {
   display: none;
 }
 
-button:has(.loading-action).loading span {
+button:has(.loading-action).loading span,
+.button:has(.loading-action).loading span {
   font-size: 0;
-}
-
-button.loading i:not(.loading-action) {
-  display: none;
 }
 
 /* Button Group */

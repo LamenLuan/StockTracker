@@ -66,6 +66,8 @@ function areaPath() {
 }
 
 $.fn.setInputAsLoading = function (loading) {
-	$(this).prop('disabled', loading)
+	const jqThis = $(this);
+	jqThis.prop('disabled', loading)
 		.toggleClass('loading', loading);
+	return jqThis;
 };
