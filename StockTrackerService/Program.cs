@@ -52,12 +52,16 @@ internal class Program
     var connectionTries = 0;
     var apiCommunicated = true;
     await ReadStockTrackingsAsync();
-    var trackingsToNotify = StocksTracked.Where(s => !s.NotificationMuted).ToList();
+
+    var trackingsToNotify = StocksTracked
+      .Where(s => !s.NotificationMuted)
+      .GroupBy(s => s.Symbol)
+      .ToList();
 
     for (int i = 0; i < trackingsToNotify.Count; i++)
     {
-      var tracked = trackingsToNotify[i];
-      var url = $"https://brapi.dev/api/quote/{tracked.Symbol}?token={_settings.ApiKey}";
+      var trackingToNotify = trackingsToNotify[i];
+      var url = $"https://brapi.dev/api/quote/{trackingToNotify.Key}?token={_settings.ApiKey}";
       string? response;
 
       try
@@ -67,7 +71,7 @@ internal class Program
       catch (Exception)
       {
         if (++connectionTries == 3) return;
-        CheckIfApiIsCommunicating(ref apiCommunicated, tracked);
+        CheckIfApiIsCommunicating(ref apiCommunicated);
         i--;
         continue;
       }
@@ -79,30 +83,64 @@ internal class Program
       var stockResults = response.Deserialize<StocksResults>();
       if (stockResults == null) continue;
 
-      CheckIfStockTriggered(stockResults, tracked);
+      CheckIfStockTriggered(stockResults, [.. trackingToNotify]);
     }
   }
 
   private static void CheckIfStockTriggered(
     StocksResults stocksResults,
-    StockTracking tracked
+    StockTracking[] trackings
   )
   {
     var priceNow = stocksResults.Results.First().RegularMarketPrice;
     if (priceNow.Equals(0f)) return;
 
-    if (PriceTriggered(tracked, priceNow))
+    var (toBuy, toSell) = DivideTrackingsByType(trackings);
+
+    CheckIfStockTriggered(toBuy, priceNow, toBuy: true);
+    CheckIfStockTriggered(toSell, priceNow, toBuy: false);
+  }
+
+  private static void CheckIfStockTriggered(
+      StockTracking[] tracked,
+      float priceNow,
+      bool toBuy
+    )
+  {
+    var orderedTracked = toBuy
+      ? tracked.OrderByDescending(t => t.PriceTrigger)
+      : tracked.OrderBy(t => t.PriceTrigger);
+
+    foreach (var tracking in orderedTracked)
     {
-      var stockTriggered = new StockTriggered(tracked, priceNow);
-      StocksTriggered.Add(stockTriggered);
-      return;
+      if (PriceTriggered(tracking, priceNow))
+      {
+        var stockTriggered = new StockTriggered(tracking, priceNow);
+        StocksTriggered.Add(stockTriggered);
+      }
+      else if (PriceTriggered(tracking, priceNow, _settings.PriceRange))
+      {
+        var stockTriggered = new StockTriggered(tracking, priceNow);
+        StocksNearTrigger.Add(stockTriggered);
+      }
+      else break;
+    }
+  }
+
+  private static (StockTracking[] ToBuy, StockTracking[] ToSell) DivideTrackingsByType(StockTracking[] trackings)
+  {
+    var toBuy = new List<StockTracking>(trackings.Length);
+    var toSell = new List<StockTracking>(trackings.Length);
+
+    foreach (var tracking in trackings)
+    {
+      if (tracking.TrackingToBuy)
+        toBuy.Add(tracking);
+      else
+        toSell.Add(tracking);
     }
 
-    if (PriceTriggered(tracked, priceNow, _settings.PriceRange))
-    {
-      var stockTriggered = new StockTriggered(tracked, priceNow);
-      StocksNearTrigger.Add(stockTriggered);
-    }
+    return ([.. toBuy], [.. toSell]);
   }
 
   private static bool IsMarketClosedDay()
@@ -199,13 +237,10 @@ internal class Program
     return StocksTracked.Count != 0;
   }
 
-  private static void CheckIfApiIsCommunicating(
-      ref bool apiCommunicated, StockTracking tracked
-    )
+  private static void CheckIfApiIsCommunicating(ref bool apiCommunicated)
   {
     if (ApiIsCommunicating())
     {
-      if (apiCommunicated) StocksTracked.Remove(tracked);
       apiCommunicated = true;
     }
     else

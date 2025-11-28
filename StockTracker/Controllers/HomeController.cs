@@ -28,7 +28,7 @@ namespace StockTracker.Controllers
 
     public async Task<IActionResult> WriteBrapiKey(BrapiKeyDTO dto)
     {
-      var url = $"https://brapi.dev/api/quote/GOGLv34?token={dto.Key}";
+      var url = $"https://brapi.dev/api/quote/GOGL34?token={dto.Key}";
       var resultado = await _client.GetStringAsync(url).GetResultAsync();
 
       if (string.IsNullOrEmpty(resultado))
