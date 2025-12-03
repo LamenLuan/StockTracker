@@ -108,8 +108,8 @@ internal class Program
     )
   {
     var orderedTracked = toBuy
-      ? tracked.OrderByDescending(t => t.PriceTrigger)
-      : tracked.OrderBy(t => t.PriceTrigger);
+      ? tracked.OrderBy(t => t.PriceTrigger)
+      : tracked.OrderByDescending(t => t.PriceTrigger);
 
     foreach (var tracking in orderedTracked)
     {
@@ -117,13 +117,15 @@ internal class Program
       {
         var stockTriggered = new StockTriggered(tracking, priceNow);
         StocksTriggered.Add(stockTriggered);
+        return;
       }
+
       else if (PriceTriggered(tracking, priceNow, _settings.PriceRange))
       {
         var stockTriggered = new StockTriggered(tracking, priceNow);
         StocksNearTrigger.Add(stockTriggered);
+        return;
       }
-      else break;
     }
   }
 
