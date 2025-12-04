@@ -3,362 +3,364 @@ using Common.Extensions;
 using Common.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Toolkit.Uwp.Notifications;
-using StockTrackerService;
 using StockTrackerService.Types;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using static Common.Constants;
 
-internal class Program
+namespace StockTrackerService
 {
-  private static Guid Guid { get; set; } = Guid.NewGuid();
-  private static List<StockTracking> StocksTracked = [];
-  private static AppDbContext _context = null!;
-  private static TelegramNotifier _telegramNotifier = null!;
-  private static AppSettings _settings = null!;
-
-  private static readonly HttpClient _client = new();
-  private static readonly List<StockTriggered> StocksTriggered = [];
-  private static readonly List<StockTriggered> StocksNearTrigger = [];
-
-  private static async Task Main()
+  public static class Program
   {
-    if (CantRunTracker()) return;
+    private static Guid Guid { get; set; } = Guid.NewGuid();
+    private static List<StockTracking> StocksTracked = [];
+    private static AppDbContext _context = null!;
+    private static TelegramNotifier _telegramNotifier = null!;
+    private static AppSettings _settings = null!;
 
-    await LoadAppResources();
-    Notifier.Notify("Program initialized");
-    WaitUntilStartTime();
+    private static readonly HttpClient _client = new();
+    private static readonly List<StockTriggered> StocksTriggered = [];
+    private static readonly List<StockTriggered> StocksNearTrigger = [];
 
-    while (true)
+    private static async Task Main()
     {
-      if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= _settings.AppClosingTime)
-        break;
+      if (CantRunTracker()) return;
 
-      if (IsApiKeySet())
+      await LoadAppResources();
+      Notifier.Notify("Program initialized");
+      WaitUntilStartTime();
+
+      while (true)
       {
-        await AnalyseTrackings();
-        await NotifyTriggersAsync();
+        if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= _settings.AppClosingTime)
+          break;
+
+        if (IsApiKeySet())
+        {
+          await AnalyseTrackings();
+          await NotifyTriggersAsync();
+        }
+
+        _context.Dispose();
+        await WaitCooldownLoadDbContext();
       }
-
-      _context.Dispose();
-      await WaitCooldownLoadDbContext();
     }
-  }
 
-  #region Tracker Business Rules
+    #region Tracker Business Rules
 
-  private static async Task AnalyseTrackings()
-  {
-    var connectionTries = 0;
-    var apiCommunicated = true;
-    await ReadStockTrackingsAsync();
-
-    var trackingsToNotify = StocksTracked
-      .Where(s => !s.NotificationMuted)
-      .GroupBy(s => s.Symbol)
-      .ToList();
-
-    for (int i = 0; i < trackingsToNotify.Count; i++)
+    private static async Task AnalyseTrackings()
     {
-      var trackingToNotify = trackingsToNotify[i];
-      var url = $"https://brapi.dev/api/quote/{trackingToNotify.Key}?token={_settings.ApiKey}";
-      string? response;
+      var connectionTries = 0;
+      var apiCommunicated = true;
+      await ReadStockTrackingsAsync();
 
-      try
+      var trackingsToNotify = StocksTracked
+        .Where(s => !s.NotificationMuted)
+        .GroupBy(s => s.Symbol)
+        .ToList();
+
+      for (int i = 0; i < trackingsToNotify.Count; i++)
       {
-        response = await _client.GetStringAsync(url);
+        var trackingToNotify = trackingsToNotify[i];
+        var url = $"https://brapi.dev/api/quote/{trackingToNotify.Key}?token={_settings.ApiKey}";
+        string? response;
+
+        try
+        {
+          response = await _client.GetStringAsync(url);
+        }
+        catch (Exception)
+        {
+          if (++connectionTries == 3) return;
+          CheckIfApiIsCommunicating(ref apiCommunicated);
+          i--;
+          continue;
+        }
+
+        connectionTries = 0;
+        apiCommunicated = true;
+        if (string.IsNullOrEmpty(response)) continue;
+
+        var stockResults = response.Deserialize<StocksResults>();
+        if (stockResults == null) continue;
+
+        CheckIfStockTriggered(stockResults, [.. trackingToNotify]);
       }
-      catch (Exception)
-      {
-        if (++connectionTries == 3) return;
-        CheckIfApiIsCommunicating(ref apiCommunicated);
-        i--;
-        continue;
-      }
-
-      connectionTries = 0;
-      apiCommunicated = true;
-      if (string.IsNullOrEmpty(response)) continue;
-
-      var stockResults = response.Deserialize<StocksResults>();
-      if (stockResults == null) continue;
-
-      CheckIfStockTriggered(stockResults, [.. trackingToNotify]);
     }
-  }
 
-  private static void CheckIfStockTriggered(
-    StocksResults stocksResults,
-    StockTracking[] trackings
-  )
-  {
-    var priceNow = stocksResults.Results.First().RegularMarketPrice;
-    if (priceNow.Equals(0f)) return;
-
-    var (toBuy, toSell) = DivideTrackingsByType(trackings);
-
-    CheckIfStockTriggered(toBuy, priceNow, toBuy: true);
-    CheckIfStockTriggered(toSell, priceNow, toBuy: false);
-  }
-
-  private static void CheckIfStockTriggered(
-      StockTracking[] tracked,
-      float priceNow,
-      bool toBuy
+    private static void CheckIfStockTriggered(
+      StocksResults stocksResults,
+      StockTracking[] trackings
     )
-  {
-    var orderedTracked = toBuy
-      ? tracked.OrderBy(t => t.PriceTrigger)
-      : tracked.OrderByDescending(t => t.PriceTrigger);
-
-    foreach (var tracking in orderedTracked)
     {
-      if (PriceTriggered(tracking, priceNow))
+      var priceNow = stocksResults.Results.First().RegularMarketPrice;
+      if (priceNow.Equals(0f)) return;
+
+      var (toBuy, toSell) = DivideTrackingsByType(trackings);
+
+      CheckIfStockTriggered(toBuy, priceNow, toBuy: true);
+      CheckIfStockTriggered(toSell, priceNow, toBuy: false);
+    }
+
+    private static void CheckIfStockTriggered(
+        StockTracking[] tracked,
+        float priceNow,
+        bool toBuy
+      )
+    {
+      var orderedTracked = toBuy
+        ? tracked.OrderBy(t => t.PriceTrigger)
+        : tracked.OrderByDescending(t => t.PriceTrigger);
+
+      foreach (var tracking in orderedTracked)
       {
-        var stockTriggered = new StockTriggered(tracking, priceNow);
-        StocksTriggered.Add(stockTriggered);
-        return;
+        if (PriceTriggered(tracking, priceNow))
+        {
+          var stockTriggered = new StockTriggered(tracking, priceNow);
+          StocksTriggered.Add(stockTriggered);
+          return;
+        }
+
+        else if (PriceTriggered(tracking, priceNow, _settings.PriceRange))
+        {
+          var stockTriggered = new StockTriggered(tracking, priceNow);
+          StocksNearTrigger.Add(stockTriggered);
+          return;
+        }
+      }
+    }
+
+    private static (StockTracking[] ToBuy, StockTracking[] ToSell) DivideTrackingsByType(StockTracking[] trackings)
+    {
+      var toBuy = new List<StockTracking>(trackings.Length);
+      var toSell = new List<StockTracking>(trackings.Length);
+
+      foreach (var tracking in trackings)
+      {
+        if (tracking.TrackingToBuy)
+          toBuy.Add(tracking);
+        else
+          toSell.Add(tracking);
       }
 
-      else if (PriceTriggered(tracking, priceNow, _settings.PriceRange))
+      return ([.. toBuy], [.. toSell]);
+    }
+
+    private static bool IsMarketClosedDay()
+    {
+      var day = DateTime.Now.DayOfWeek;
+      return day == DayOfWeek.Sunday || day == DayOfWeek.Saturday;
+    }
+
+    public static bool PriceTriggered(
+      StockTracking tracked,
+      float priceNow,
+      float priceRange = 0f)
+    {
+      var desiredPrice = tracked.PriceTrigger;
+      var rangeValue = desiredPrice * priceRange / 100f;
+
+      return tracked.TrackingToBuy
+        ? priceNow <= desiredPrice + rangeValue
+        : priceNow >= desiredPrice - rangeValue;
+    }
+
+    #endregion
+
+    private static bool CantRunTracker()
+    {
+      return !Debugger.IsAttached &&
+        (IsProgramRunningAlready() || IsMarketClosedDay());
+    }
+
+    private static bool IsApiKeySet()
+    {
+      if (string.IsNullOrEmpty(_settings.ApiKey))
       {
-        var stockTriggered = new StockTriggered(tracking, priceNow);
-        StocksNearTrigger.Add(stockTriggered);
-        return;
+        Notifier.Notify("API Key not set", buttonConfig: ("Configure Key", "OpenApp"));
+        return false;
       }
-    }
-  }
 
-  private static (StockTracking[] ToBuy, StockTracking[] ToSell) DivideTrackingsByType(StockTracking[] trackings)
-  {
-    var toBuy = new List<StockTracking>(trackings.Length);
-    var toSell = new List<StockTracking>(trackings.Length);
-
-    foreach (var tracking in trackings)
-    {
-      if (tracking.TrackingToBuy)
-        toBuy.Add(tracking);
-      else
-        toSell.Add(tracking);
+      return true;
     }
 
-    return ([.. toBuy], [.. toSell]);
-  }
-
-  private static bool IsMarketClosedDay()
-  {
-    var day = DateTime.Now.DayOfWeek;
-    return day == DayOfWeek.Sunday || day == DayOfWeek.Saturday;
-  }
-
-  private static bool PriceTriggered(
-    StockTracking tracked,
-    float priceNow,
-    float priceRange = 0f)
-  {
-    var desiredPrice = tracked.PriceTrigger;
-    var rangeValue = desiredPrice * priceRange / 100f;
-
-    return tracked.TrackingToBuy
-      ? priceNow <= desiredPrice + rangeValue
-      : priceNow >= desiredPrice - rangeValue;
-  }
-
-  #endregion
-
-  private static bool CantRunTracker()
-  {
-    return !Debugger.IsAttached &&
-      (IsProgramRunningAlready() || IsMarketClosedDay());
-  }
-
-  private static bool IsApiKeySet()
-  {
-    if (string.IsNullOrEmpty(_settings.ApiKey))
+    private static async Task LoadAppResources()
     {
-      Notifier.Notify("API Key not set", buttonConfig: ("Configure Key", "OpenApp"));
-      return false;
+      AddToastClickEvent();
+      await LoadDbContext();
+      if (_settings.HasTelegramConfig())
+        _telegramNotifier = new TelegramNotifier(_settings);
     }
 
-    return true;
-  }
-
-  private static async Task LoadAppResources()
-  {
-    AddToastClickEvent();
-    await LoadDbContext();
-    if (_settings.HasTelegramConfig())
-      _telegramNotifier = new TelegramNotifier(_settings);
-  }
-
-  private static async Task LoadDbContext()
-  {
-    if (_context == null)
+    private static async Task LoadDbContext()
     {
-      _context = new AppDbContext();
-      _context.Database.Migrate();
+      if (_context == null)
+      {
+        _context = new AppDbContext();
+        _context.Database.Migrate();
+        _settings = await _context.GetSettings();
+      }
+
+      if (_settings.MongoConnectionString.HasContent())
+        _context = await CreateMongoDbContext();
+
       _settings = await _context.GetSettings();
     }
 
-    if (_settings.MongoConnectionString.HasContent())
-      _context = await CreateMongoDbContext();
-
-    _settings = await _context.GetSettings();
-  }
-
-  private static async Task<MongoDbContext> CreateMongoDbContext()
-  {
-    try
+    private static async Task<MongoDbContext> CreateMongoDbContext()
     {
-      var mongoDbContext = new MongoDbContext(_settings.MongoConnectionString!);
-      await mongoDbContext.ImportDataFromCloud();
-      return mongoDbContext;
+      try
+      {
+        var mongoDbContext = new MongoDbContext(_settings.MongoConnectionString!);
+        await mongoDbContext.ImportDataFromCloud();
+        return mongoDbContext;
+      }
+      catch (Exception)
+      {
+        Notifier.Notify("Cannot connect to the clould storage. Program closed");
+        throw;
+      }
     }
-    catch (Exception)
-    {
-      Notifier.Notify("Cannot connect to the clould storage. Program closed");
-      throw;
-    }
-  }
 
-  private static bool IsProgramRunningAlready()
-  {
-    _ = new Mutex(true, SERVICE_MUTEX, out bool createdNew);
+    private static bool IsProgramRunningAlready()
+    {
+      _ = new Mutex(true, SERVICE_MUTEX, out bool createdNew);
 
-    if (!createdNew)
-    {
-      Notifier.Notify("Program already running");
-      return true;
-    }
-    return false;
-  }
-
-  private static async Task<bool> ReadStockTrackingsAsync()
-  {
-    StocksTracked = await _context.GetStockTrackingsAsync();
-    return StocksTracked.Count != 0;
-  }
-
-  private static void CheckIfApiIsCommunicating(ref bool apiCommunicated)
-  {
-    if (ApiIsCommunicating())
-    {
-      apiCommunicated = true;
-    }
-    else
-    {
-      Thread.Sleep(TimeSpan.FromSeconds(2));
-      apiCommunicated = false;
-    }
-  }
-
-  private static bool ApiIsCommunicating()
-  {
-    try
-    {
-      Ping myPing = new();
-      return myPing.Send("brapi.dev").Status == IPStatus.Success;
-    }
-    catch (Exception)
-    {
+      if (!createdNew)
+      {
+        Notifier.Notify("Program already running");
+        return true;
+      }
       return false;
     }
-  }
 
-  private static void WaitUntilStartTime()
-  {
-    if (Debugger.IsAttached) return;
-
-    var timeNow = DateTime.Now.TimeOfDay;
-
-    if (timeNow >= _settings.AppStartTime)
+    private static async Task<bool> ReadStockTrackingsAsync()
     {
-      if (timeNow >= _settings.AppClosingTime)
-        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime);
+      StocksTracked = await _context.GetStockTrackingsAsync();
+      return StocksTracked.Count != 0;
     }
-    else Thread.Sleep(_settings.AppStartTime - timeNow);
-  }
 
-  private static async Task NotifyTriggersAsync()
-  {
-    var allTriggers = StocksTriggered.Concat(StocksNearTrigger).ToList();
-    if (allTriggers.Count == 0) return;
-
-    Notifier.NotifyStocks(StocksTriggered, StocksNearTrigger);
-
-    if (_telegramNotifier != null)
+    private static void CheckIfApiIsCommunicating(ref bool apiCommunicated)
     {
-      if (_context is MongoDbContext mongoDbContext)
+      if (ApiIsCommunicating())
       {
-        var cooldown = _settings.Cooldown + TimeSpan.FromMinutes(1);
-        var (activeTrackerId, lastNotification) = await mongoDbContext.GetLastNotificationInfo();
+        apiCommunicated = true;
+      }
+      else
+      {
+        Thread.Sleep(TimeSpan.FromSeconds(2));
+        apiCommunicated = false;
+      }
+    }
 
-        TimeSpan? timeSinceLastNotification = lastNotification.HasValue
-          ? DateTime.UtcNow - lastNotification.Value
-          : null;
+    private static bool ApiIsCommunicating()
+    {
+      try
+      {
+        Ping myPing = new();
+        return myPing.Send("brapi.dev").Status == IPStatus.Success;
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    }
 
-        if (Guid != activeTrackerId && timeSinceLastNotification.HasValue && cooldown > timeSinceLastNotification)
-          return;
+    private static void WaitUntilStartTime()
+    {
+      if (Debugger.IsAttached) return;
 
-        await mongoDbContext.UpdateLastNotification(Guid, DateTime.UtcNow);
+      var timeNow = DateTime.Now.TimeOfDay;
+
+      if (timeNow >= _settings.AppStartTime)
+      {
+        if (timeNow >= _settings.AppClosingTime)
+          Thread.Sleep(TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime);
+      }
+      else Thread.Sleep(_settings.AppStartTime - timeNow);
+    }
+
+    private static async Task NotifyTriggersAsync()
+    {
+      var allTriggers = StocksTriggered.Concat(StocksNearTrigger).ToList();
+      if (allTriggers.Count == 0) return;
+
+      Notifier.NotifyStocks(StocksTriggered, StocksNearTrigger);
+
+      if (_telegramNotifier != null)
+      {
+        if (_context is MongoDbContext mongoDbContext)
+        {
+          var cooldown = _settings.Cooldown + TimeSpan.FromMinutes(1);
+          var (activeTrackerId, lastNotification) = await mongoDbContext.GetLastNotificationInfo();
+
+          TimeSpan? timeSinceLastNotification = lastNotification.HasValue
+            ? DateTime.UtcNow - lastNotification.Value
+            : null;
+
+          if (Guid != activeTrackerId && timeSinceLastNotification.HasValue && cooldown > timeSinceLastNotification)
+            return;
+
+          await mongoDbContext.UpdateLastNotification(Guid, DateTime.UtcNow);
+        }
+
+        await _telegramNotifier.NotifyStocks(allTriggers);
       }
 
-      await _telegramNotifier.NotifyStocks(allTriggers);
+      StocksTriggered.Clear();
+      StocksNearTrigger.Clear();
     }
 
-    StocksTriggered.Clear();
-    StocksNearTrigger.Clear();
-  }
-
-  private static void AddToastClickEvent()
-  {
-    ToastNotificationManagerCompat.OnActivated += toastArgs =>
+    private static void AddToastClickEvent()
     {
-      var args = ToastArguments.Parse(toastArgs.Argument);
-      var openAppArg = args.Where(a => a.Key == "OpenApp").SingleOrDefault();
-      if (openAppArg.Key != null)
-        OpenFrontApp();
-    };
-  }
-
-  private static void OpenFrontApp()
-  {
-    if (Mutex.TryOpenExisting(APP_MUTEX, out _))
-    {
-      Process.Start(new ProcessStartInfo
+      ToastNotificationManagerCompat.OnActivated += toastArgs =>
       {
-        FileName = APP_URL,
-        UseShellExecute = true
-      });
-
-      return;
+        var args = ToastArguments.Parse(toastArgs.Argument);
+        var openAppArg = args.Where(a => a.Key == "OpenApp").SingleOrDefault();
+        if (openAppArg.Key != null)
+          OpenFrontApp();
+      };
     }
 
-    var exePath = $"{AppDomain.CurrentDomain.BaseDirectory}{APP_NAME}.exe";
-
-    try
+    private static void OpenFrontApp()
     {
-      Process.Start(new ProcessStartInfo { FileName = exePath });
+      if (Mutex.TryOpenExisting(APP_MUTEX, out _))
+      {
+        Process.Start(new ProcessStartInfo
+        {
+          FileName = APP_URL,
+          UseShellExecute = true
+        });
+
+        return;
+      }
+
+      var exePath = $"{AppDomain.CurrentDomain.BaseDirectory}{APP_NAME}.exe";
+
+      try
+      {
+        Process.Start(new ProcessStartInfo { FileName = exePath });
+      }
+      catch (Exception)
+      {
+        Notifier.Notify("Could not open the application");
+      }
     }
-    catch (Exception)
+
+    private static async Task WaitCooldownLoadDbContext()
     {
-      Notifier.Notify("Could not open the application");
-    }
-  }
+      var totalTimeWaited = TimeSpan.Zero;
 
-  private static async Task WaitCooldownLoadDbContext()
-  {
-    var totalTimeWaited = TimeSpan.Zero;
+      while (true)
+      {
+        var coolDown = _settings.Cooldown;
+        totalTimeWaited += coolDown;
 
-    while (true)
-    {
-      var coolDown = _settings.Cooldown;
-      totalTimeWaited += coolDown;
+        Thread.Sleep(coolDown);
 
-      Thread.Sleep(coolDown);
-
-      await LoadDbContext();
-      if (totalTimeWaited >= _settings.Cooldown) break;
+        await LoadDbContext();
+        if (totalTimeWaited >= _settings.Cooldown) break;
+      }
     }
   }
 }
