@@ -157,6 +157,7 @@ namespace StockTrackerService
       float priceNow,
       float priceRange = 0f)
     {
+      if (priceNow <= 0) return false;
       var desiredPrice = tracked.PriceTrigger;
       var rangeValue = desiredPrice * priceRange / 100f;
 
