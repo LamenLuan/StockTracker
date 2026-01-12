@@ -13,7 +13,7 @@ internal class Program
 {
   private static Guid Guid { get; set; } = Guid.NewGuid();
   private static List<StockTracking> StocksTracked = [];
-  private static AppDbContext _context = null!;
+  private static AppDbContext? _context = null!;
   private static TelegramNotifier _telegramNotifier = null!;
   private static AppSettings _settings = null!;
 
@@ -27,12 +27,10 @@ internal class Program
 
     await LoadAppResources();
     Notifier.Notify("Program initialized");
-    WaitUntilStartTime();
 
     while (true)
     {
-      if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= _settings.AppClosingTime)
-        break;
+      WaitUntilStartTime();
 
       if (IsApiKeySet())
       {
@@ -40,7 +38,8 @@ internal class Program
         await NotifyTriggersAsync();
       }
 
-      _context.Dispose();
+      _context?.Dispose();
+      _context = null;
       await WaitCooldownLoadDbContext();
     }
   }
@@ -195,6 +194,7 @@ internal class Program
 
   private static async Task<bool> ReadStockTrackingsAsync()
   {
+    if (_context == null) return false;
     StocksTracked = await _context.GetStockTrackingsAsync();
     return StocksTracked.Count != 0;
   }
@@ -233,11 +233,13 @@ internal class Program
     if (Debugger.IsAttached) return;
 
     var timeNow = DateTime.Now.TimeOfDay;
-
     if (timeNow >= _settings.AppStartTime)
     {
       if (timeNow >= _settings.AppClosingTime)
-        Thread.Sleep(TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime);
+      {
+        var sleepTime = TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime;
+        Thread.Sleep(sleepTime);
+      }
     }
     else Thread.Sleep(_settings.AppStartTime - timeNow);
   }
