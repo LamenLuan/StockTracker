@@ -233,15 +233,16 @@ internal class Program
     if (Debugger.IsAttached) return;
 
     var timeNow = DateTime.Now.TimeOfDay;
-    if (timeNow >= _settings.AppStartTime)
+
+    if (timeNow < _settings.AppStartTime)
     {
-      if (timeNow >= _settings.AppClosingTime)
-      {
-        var sleepTime = TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime;
-        Thread.Sleep(sleepTime);
-      }
+      Thread.Sleep(_settings.AppStartTime - timeNow);
     }
-    else Thread.Sleep(_settings.AppStartTime - timeNow);
+    else if (timeNow >= _settings.AppClosingTime)
+    {
+      var sleepTime = TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime;
+      Thread.Sleep(sleepTime);
+    }
   }
 
   private static async Task NotifyTriggersAsync()
