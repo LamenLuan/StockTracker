@@ -14,7 +14,7 @@ namespace StockTrackerService
   {
     private static Guid Guid { get; set; } = Guid.NewGuid();
     private static List<StockTracking> StocksTracked = [];
-    private static AppDbContext _context = null!;
+    private static AppDbContext? _context = null!;
     private static TelegramNotifier _telegramNotifier = null!;
     private static AppSettings _settings = null!;
 
@@ -28,12 +28,10 @@ namespace StockTrackerService
 
       await LoadAppResources();
       Notifier.Notify("Program initialized");
-      WaitUntilStartTime();
 
       while (true)
       {
-        if (!Debugger.IsAttached && DateTime.Now.TimeOfDay >= _settings.AppClosingTime)
-          break;
+        WaitUntilStartTime();
 
         if (IsApiKeySet())
         {
@@ -41,10 +39,12 @@ namespace StockTrackerService
           await NotifyTriggersAsync();
         }
 
-        _context.Dispose();
+        _context?.Dispose();
+        _context = null;
         await WaitCooldownLoadDbContext();
       }
     }
+
 
     #region Tracker Business Rules
 
@@ -237,6 +237,7 @@ namespace StockTrackerService
 
     private static async Task<bool> ReadStockTrackingsAsync()
     {
+      if (_context == null) return false;
       StocksTracked = await _context.GetStockTrackingsAsync();
       return StocksTracked.Count != 0;
     }
@@ -272,13 +273,15 @@ namespace StockTrackerService
       if (Debugger.IsAttached) return;
 
       var timeNow = DateTime.Now.TimeOfDay;
-
-      if (timeNow >= _settings.AppStartTime)
+      if (timeNow < _settings.AppStartTime)
       {
-        if (timeNow >= _settings.AppClosingTime)
-          Thread.Sleep(TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime);
+        Thread.Sleep(_settings.AppStartTime - timeNow);
       }
-      else Thread.Sleep(_settings.AppStartTime - timeNow);
+      else if (timeNow >= _settings.AppClosingTime)
+      {
+        var sleepTime = TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime;
+        Thread.Sleep(sleepTime);
+      }
     }
 
     private static async Task NotifyTriggersAsync()
