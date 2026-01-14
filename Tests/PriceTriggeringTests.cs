@@ -4,7 +4,7 @@ using StockTrackerService;
 
 namespace Tests
 {
-  public class StockTrackerServiceTests
+  public class PriceTriggeringTests
   {
     private static StockTracking TestStockTracking => new()
     {

@@ -31,7 +31,7 @@ namespace StockTrackerService
 
       while (true)
       {
-        WaitUntilStartTime();
+        CooldownVerifier.WaitUntilStartTime(_settings);
 
         if (IsApiKeySet())
         {
@@ -44,7 +44,6 @@ namespace StockTrackerService
         await WaitCooldownLoadDbContext();
       }
     }
-
 
     #region Tracker Business Rules
 
@@ -265,22 +264,6 @@ namespace StockTrackerService
       catch (Exception)
       {
         return false;
-      }
-    }
-
-    private static void WaitUntilStartTime()
-    {
-      if (Debugger.IsAttached) return;
-
-      var timeNow = DateTime.Now.TimeOfDay;
-      if (timeNow < _settings.AppStartTime)
-      {
-        Thread.Sleep(_settings.AppStartTime - timeNow);
-      }
-      else if (timeNow >= _settings.AppClosingTime)
-      {
-        var sleepTime = TimeSpan.FromDays(1) - timeNow + _settings.AppStartTime;
-        Thread.Sleep(sleepTime);
       }
     }
 
